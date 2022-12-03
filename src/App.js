@@ -37,7 +37,7 @@ const App = () => {
         <main>
           <Routes>
             <Route path="/" name="" element={<HomeFrame />} />
-            <Route path="/addPair" element={<AddPairFrame />} />
+            <Route path="/addPair" element={<AddPairFrame walletConnect={isWalletConnected}/>} />
             <Route path="/about" element={<AboutFrame />} />
             <Route path="/my" element={<MyFrame walletConnect={isWalletConnected}/>} />
             <Route path="/pair/:pairId" element={<PairDetailFrame walletConnect={isWalletConnected}/>} />
@@ -59,7 +59,7 @@ const HomeFrame = (props) => {
 const AddPairFrame = (props) => {
   return (
     <>
-      <AddPair />
+      <AddPair walletConnect={props.walletConnect}/>
     </>
   );
 };

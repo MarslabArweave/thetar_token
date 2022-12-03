@@ -16,18 +16,12 @@ export const AddPair = (props) => {
   const [balance, setBalance] = React.useState('N/A');
 
   React.useEffect(async () => {
-    const tryGetBalance = () => {
-      getBalance('ar').then(async ret=>{
-        if (ret.status === false) {
-          await sleep(5000);
-          tryGetBalance();
-        } else {
-          setBalance(ret.result);
-        }
-      });
-    }
-    tryGetBalance();
-  }, []);
+    getBalance('ar').then(async ret=>{
+      if (ret.status === true) {
+        setBalance(ret.result);
+      }
+    });
+  }, [props.walletConnect]);
 
   // const changeHandler = async (event) => {
 	// 	setLogo(event.target.files[0]);
