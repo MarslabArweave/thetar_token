@@ -21,15 +21,31 @@ export const Navigation = (props) => {
         </Navbar.Brand>
         <Nav>
           <Nav.Menu title="Menu">
-            <Nav.Item icon={<HomeIcon />}><Link to="/" className='menuText'>Home</Link></Nav.Item>
-            <Nav.Item icon={<AddIcon />}><Link to="/addPair" className='menuText'>Add Pair</Link></Nav.Item>
-            <Nav.Item icon={<MoneyIcon />}><Link to="/claim" className='menuText'>Claim Tokens</Link></Nav.Item>
-            <Nav.Item icon={<MyIcon />}><Link to="/my" className='menuText'>My Orders</Link></Nav.Item>
-            <Nav.Item icon={<AboutIcon />}><Link to="/about" className='menuText'>About</Link></Nav.Item>
+            <Link to="/" className='menuText'>
+              <Nav.Item icon={<HomeIcon />}>Home</Nav.Item>
+            </Link>
+            <Link to="/addPair" className='menuText'>
+              <Nav.Item icon={<AddIcon />}>Add Pair</Nav.Item>
+            </Link>
+            <Link to="/claim" className='menuText'>
+              <Nav.Item icon={<MoneyIcon />}>Claim Token</Nav.Item>
+            </Link>
+            <Link to="/my" className='menuText'>
+              <Nav.Item icon={<MyIcon />}>My Orders</Nav.Item>
+            </Link>
+            <Link to="/about" className='menuText'>
+              <Nav.Item icon={<AboutIcon />}>About</Nav.Item>
+            </Link>
             <Nav.Menu icon={<ContactIcon />} title="Contact" className='menuText'>
-              <Nav.Item icon={<TwitterIcon />}><a href='https://twitter.com/mARsLab_2022' className='menuText'>Twitter</a></Nav.Item>
-              <Nav.Item icon={<GithubIcon />}><a href='https://github.com/marslab2022' className='menuText'>Github</a></Nav.Item>
-              <Nav.Item icon={<EmailIcon />}><a href='mailto: marslab.2022@gmail.com' className='menuText'>E-mail</a></Nav.Item>
+              <a href='https://twitter.com/mARsLab_2022' className='menuText'>
+                <Nav.Item icon={<TwitterIcon />}>Twitter</Nav.Item>
+              </a>
+              <a href='https://github.com/marslab2022' className='menuText'>
+                <Nav.Item icon={<GithubIcon />}>Github</Nav.Item>
+              </a>
+              <a href='mailto: marslab.2022@gmail.com' className='menuText'>
+                <Nav.Item icon={<EmailIcon />}>E-mail</Nav.Item>
+              </a>
             </Nav.Menu>
           </Nav.Menu>
         </Nav>
