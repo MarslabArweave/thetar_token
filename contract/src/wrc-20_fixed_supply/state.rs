@@ -10,9 +10,4 @@ pub struct State {
     pub total_supply: u64,
     pub balances: HashMap<String, u64>,
     pub allowances: HashMap<String, HashMap<String, u64>>,
-
-    //Evolve interface
-    pub owner: String,
-    pub evolve: Option<String>,
-    pub can_evolve: Option<bool>
 }

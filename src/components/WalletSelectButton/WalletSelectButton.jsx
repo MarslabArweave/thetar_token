@@ -4,6 +4,7 @@ import "./walletSelectButton.css";
 import arconnectLogo from './arconnect-logo.svg';
 import arweaveLogo from './arweave-ar-logo.svg';
 import mathWalletLogo from './mathwallet-logo.png';
+import { connectWallet } from '../../lib/api';
 
 const webWallet = new ArweaveWebWallet({
   name: 'jARdge System',
@@ -25,6 +26,7 @@ export const WalletSelectButton = (props) => {
       const firstFive = address.substring(0,5);
       const lastFour = address.substring(address.length-4);
       setAddressText(`${firstFive}..${lastFour }`);
+      await connectWallet('use_wallet');
       props.setIsConnected(true);
     }
     setActiveWallet(walletName);

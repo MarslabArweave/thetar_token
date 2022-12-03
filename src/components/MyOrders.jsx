@@ -3,7 +3,6 @@ import {
   cancelOrder,
   getWalletAddress, 
   pairInfo, 
-  readState, 
   userOrder
 } from '../lib/api';
 import { ProgressSpinner } from './ProgressSpinner/ProgressSpinner';
@@ -13,7 +12,6 @@ export const MyOrders = (props) => {
 
   React.useEffect(async () => {
     fetchUserOrders();
-    readState();//debug
   }, []);
 
   function fetchUserOrders() {

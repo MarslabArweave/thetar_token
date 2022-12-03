@@ -28,9 +28,6 @@ pub enum Action {
     Allowance {
         owner: String,
         spender: String
-    },
-    Evolve {
-        value: String
     }
 }
 

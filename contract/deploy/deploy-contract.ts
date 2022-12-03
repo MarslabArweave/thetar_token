@@ -6,11 +6,12 @@ import { addFunds, mineBlock } from '../utils/_helpers';
 import {
   PstState,
   Warp,
-  WarpNodeFactory,
+  WarpFactory,
   LoggerFactory,
+  sleep,
 } from 'warp-contracts';
 
-const calcHash = (string) => {
+const hashFunc = (string) => {
   var hash: number = 0, i, chr;
   if (string.length === 0) return hash;
   for (i = 0; i < string.length; i++) {
@@ -21,74 +22,119 @@ const calcHash = (string) => {
   return hash;
 }
 
+const warp = WarpFactory.forMainnet();
+const arweave = warp.arweave;
+LoggerFactory.INST.logLevel('error');
+
+const calcHashOfTokenContract = async () => {
+  const SrcTxId = 'jxB_n6cJo4s-a66oMIGACUjERJXQfc3IoIMV3_QK-1w';
+  const srcTx = <Uint8Array>await arweave.transactions.getData(SrcTxId);
+  console.log('transaction md5 length: ', srcTx.length);
+  const hashResult = hashFunc(srcTx);
+
+  console.log('Calculate hash succeed: ', hashResult);
+  return hashResult;
+}
+
 (async () => {
   console.log('running...');
-  const arweave = Arweave.init({
-    host: 'www.arweave.net',
-    port: 443,
-    protocol: 'https',
-  });
-
-  LoggerFactory.INST.logLevel('error');
-
-  const warp = WarpNodeFactory.memCachedBased(arweave).useArweaveGateway().build();
+  const hashResult = await calcHashOfTokenContract();
 
   const walletJwk = JSON.parse(
     fs.readFileSync(path.join(__dirname, 'key-file.json'), 'utf8')
   );
   const walletAddress = await arweave.wallets.jwkToAddress(walletJwk);
-  console.log('Current wallet selected to deploy contract is: ', walletAddress);
+  
+  // deploy TAR pst
+  const wrcSrc = fs.readFileSync(path.join(__dirname, '../pkg/erc20-contract_bg.wasm'));
 
-  // calc hashs
-  const fixedPstSrcHash = calcHash(fs.readFileSync(path.join(__dirname, 'fixed_pst.js'), 'utf8'));
-  const mintablePstSrcHash = calcHash(fs.readFileSync(path.join(__dirname, 'mintable_pst.js'), 'utf8'));
-  const dedicatedWalletHash = calcHash(fs.readFileSync(path.join(__dirname, '../dist/dedicated_wallet/contract.js'), 'utf8'));
+  const tarInit = {
+    symbol: 'TAR',
+    name: 'ThetAR exchange token',
+    decimals: 2,
+    totalSupply: 20000,
+    balances: {
+      [walletAddress]: 10000,
+    },
+    allowances: {},
+    settings: null,
+    owner: walletAddress,
+    canEvolve: true,
+    evolve: '',
+  };
 
-  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/thetAR/contract.js'), 'utf8');
-    const initFromFile = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '../dist/thetAR/initial-state.json'), 'utf8')
-    );
+  const tarTxId = (await warp.createContract.deploy({
+    wallet: walletJwk,
+    initState: JSON.stringify(tarInit),
+    src: wrcSrc,
+    wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
+    wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
+  })).contractTxId;
+
+  // deploy thetAR contract
+  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');
+  const initFromFile = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../dist/thetAR/initial-state.json'), 'utf8')
+  );
   const contractInit = {
     ...initFromFile,
-    logs: [], //debug,
+    logs: [], // only for debug
     owner: walletAddress,
-    tokenSrcTemplateHashs: [fixedPstSrcHash, mintablePstSrcHash],
-    dedicatedWalletTemplateHash: dedicatedWalletHash,
-    thetarTokenAddress: 'D6ouMlzDi6YedBBCubyOo5TiOrbs8hZck9IAvVgO170',
-    karTokenAddress: 'y2349UpHOGMLpMh6M1Q_mGagSpfeKZLdSwQmBPrUqFk',
-  
-    tokenInfos: [
-      {
-        tokenAddress: 'D6ouMlzDi6YedBBCubyOo5TiOrbs8hZck9IAvVgO170',
-        tokenName: "thetAR coin",
-        ticker: "TAR",
-        logo: ""
-      },
-      {
-        tokenAddress: 'y2349UpHOGMLpMh6M1Q_mGagSpfeKZLdSwQmBPrUqFk',
-        tokenName: "Kontractized AR",
-        ticker: "KAR",
-        logo: ""
-      }
-    ],
-    pairInfos: [
-      {
-        pairId: 0,
-        tokenAddress: 'D6ouMlzDi6YedBBCubyOo5TiOrbs8hZck9IAvVgO170',
-        dominantTokenAddress: 'y2349UpHOGMLpMh6M1Q_mGagSpfeKZLdSwQmBPrUqFk'
-      }
-    ],
-    orderInfos: {
-      0: { currentPrice: undefined, orders: [] },
-    }
+    tokenSrcTemplateHashs: [hashResult],
+    thetarTokenAddress: tarTxId,
   };
 
   const contractTxId = (await warp.createContract.deploy({
     wallet: walletJwk,
     initState: JSON.stringify(contractInit),
     src: contractSrc,
-  }));
+  })).contractTxId;
+  const contract = warp.contract(contractTxId);
+  contract.setEvaluationOptions({
+    internalWrites: true,
+    allowUnsafeClient: true,
+    allowBigInt: true,
+  }).connect(walletJwk);
+
+  // deploy test pst
+  let initialState = {
+    symbol: 'TEST',
+    name: 'TEST token',
+    decimals: 2,
+    totalSupply: 20000,
+    balances: {
+      [walletAddress]: 10000,
+    },
+    allowances: {},
+    settings: null,
+    owner: walletAddress,
+    canEvolve: true,
+    evolve: '',
+  };
+
+  const testTokenTxId = (await warp.createContract.deploy({
+    wallet: walletJwk,
+    initState: JSON.stringify(initialState),
+    src: wrcSrc,
+    wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
+    wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
+  })).contractTxId;
+
+  await contract.writeInteraction(
+    {
+      function: 'addPair',
+      params: {
+        tokenAddress: testTokenTxId,
+        logo: 'TEST_00000lQgApM_a3Z6bGFHYE7SXnBI6C5_2_24MQ',
+        description: 'test token'
+      }
+    }
+  );
+
+  console.log(JSON.stringify((await contract.readState()).cachedValue.state));
   console.log('txid: ', contractTxId);
   console.log('wallet address: ', walletAddress);
-  fs.writeFileSync(path.join(__dirname, 'thetAR-txid.json'), contractTxId);
+  fs.writeFileSync(path.join(__dirname, 'key-file-for-test.json'), JSON.stringify(walletJwk));
+  fs.writeFileSync(path.join(__dirname, 'thetAR-txid-for-test.json'), contractTxId);
+  fs.writeFileSync(path.join(__dirname, 'testtoken-txid-for-test.json'), testTokenTxId);
 })();

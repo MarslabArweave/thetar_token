@@ -11,18 +11,25 @@ import { Home } from './components/Home';
 import { AddPair } from './components/AddPair';
 import { My } from './components/My';
 import { PairDetail } from './components/PairDetail';
-
-connectContract();
+import { sleep } from 'warp-contracts';
 
 const App = () => {
+  const [isContractConnected, setIsContractConnected] = React.useState(false);
   const [isWalletConnected, setIsWalletConnected] = React.useState(false);
 
-  React.useEffect(async () => {
-    if (isWalletConnected) {
-      await connectWallet('use_wallet');
-    }
-  }, [isWalletConnected]);
+  React.useEffect(async ()=>{
+    await connectContract();
+    await sleep(3000);
+    setIsContractConnected(true);
+  }, []);
 
+  if (!isContractConnected) {
+    return (
+      <div className='gray'>
+        Loading Contract ...
+      </div>
+    );
+  }
   return (
     <div id="app">
       <div id="content">
@@ -33,7 +40,7 @@ const App = () => {
             <Route path="/addPair" element={<AddPairFrame />} />
             <Route path="/about" element={<AboutFrame />} />
             <Route path="/my" element={<MyFrame walletConnect={isWalletConnected}/>} />
-            <Route path="/pair/:pairId" element={<PairDetailFrame />} />
+            <Route path="/pair/:pairId" element={<PairDetailFrame walletConnect={isWalletConnected}/>} />
           </Routes>
         </main>
       </div>
@@ -73,10 +80,10 @@ const AboutFrame = () => {
   );
 };
 
-const PairDetailFrame = () => {
+const PairDetailFrame = (props) => {
   return (
     <>
-      <PairDetail />
+      <PairDetail walletConnect={props.walletConnect}/>
     </>
   );
 };

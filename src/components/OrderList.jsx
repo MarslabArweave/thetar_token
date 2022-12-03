@@ -1,5 +1,5 @@
 import React from 'react';
-import { calculatePriceWithDecimals, orderInfo, readState, txInfo } from '../lib/api';
+import { calculatePriceWithDecimals, orderInfo } from '../lib/api';
 
 export const OrderList = (props) => {
   const [refreshDisabled, setRefreshDisabled] = React.useState(false);
@@ -7,8 +7,6 @@ export const OrderList = (props) => {
 
   function onRefreshButtonClicked() {
     setRefreshDisabled(true);
-    readState(); //debug
-    txInfo(); //debug
     orderInfo(parseInt(props.pairId)).then(async ret => {
       console.log('onRefreshButtonClicked, orderInfo: ', ret);
       setRefreshDisabled(false);
@@ -35,12 +33,12 @@ export const OrderList = (props) => {
         '-', // sell quantity
       ];
       if (buys[i]) {
-        orderItem[0] = buys[i].price;
-        orderItem[1] = buys[i].quantity;
+        orderItem[0] = calculatePriceWithDecimals(buys[i].price, props.decimals);
+        orderItem[1] = buys[i].quantity * Math.pow(10, -props.decimals);
       }
       if (sells[i]) {
-        orderItem[2] = sells[i].price;
-        orderItem[3] = sells[i].quantity;
+        orderItem[2] = calculatePriceWithDecimals(sells[i].price, props.decimals);
+        orderItem[3] = sells[i].quantity * Math.pow(10, -props.decimals);
       }
 
       orderItems.push(orderItem);

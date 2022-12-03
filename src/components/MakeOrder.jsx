@@ -3,7 +3,9 @@ import Select from 'react-select';
 import TextareaAutosize from 'react-textarea-autosize';
 import { 
   arLessThan,
-  createOrder
+  createOrder,
+  tarDecimals,
+  tarSymbol
 } from '../lib/api';
 import { SubmitButton } from './SubmitButton/SubmitButton';
 
@@ -49,6 +51,52 @@ export const MakeOrder = (props) => {
   const [dirTypeText, setDirTypeText] = React.useState(directionOption[0]);
   const [volumeText, setVolumeText] = React.useState();
   const [priceText, setPriceText] = React.useState();
+  const [tips, setTips] = React.useState('');
+
+  React.useEffect(async ()=>{
+
+    if (orderTypeText.value === 'market') {
+      setTips('This is a market order, the amount of token you will get relies on the current orders in orderbook!');
+      return;
+    }
+    const ret = checkOrderInput();
+    if (ret.status) {
+      const vol = ret.result.volume * Math.pow(10, -props.tokenDecimals);
+      const price = ret.result.price * 
+          Math.pow(10, tarDecimals)*
+          Math.pow(10, -props.tokenDecimals);
+      if (dirTypeText.value === 'buy') {
+        setTips(`You will swap ${vol*price}$${tarSymbol} for ${vol}$${props.tokenSymbol}`);
+      } else {
+        setTips(`You will swap ${vol}$${props.tokenSymbol} for ${vol*price}$${tarSymbol}`);
+      }
+    } else {
+      setTips(ret.result);
+    }
+  }, [volumeText, priceText, dirTypeText, orderTypeText]);
+
+  function checkOrderInput() {
+    const decimals = 
+        orderTypeText.value==='market' && dirTypeText.value==='buy' ? 
+        tarDecimals : props.tokenDecimals;
+    const volume = Math.floor(Number(volumeText) * Math.pow(10, decimals));
+    if (volume === 0) {
+      return {status: false, result: `Amount should be at least ${Math.pow(10, -decimals)} !`};
+    }
+    const price = orderTypeText.value === 'limit' ? 
+        Math.floor(
+          Number(priceText)*
+          Math.pow(10, -tarDecimals)*
+          Math.pow(10, props.tokenDecimals)
+        ) : undefined;
+    if (price === 0) {
+      return {status: false, result: `Price should be greater than $
+        ${tarSymbol} 
+        ${Math.pow(10, -tarDecimals)*Math.pow(10, props.tokenDecimals)} !`
+      };
+    }
+    return {status: true, result: {volume: volume, price: price}};
+  }
 
   async function onMakeOrder() {
     // check for order type
@@ -56,8 +104,12 @@ export const MakeOrder = (props) => {
       return {status: false, result: 'No orders in orderbook, cannot create market order now!'};
     }
 
-    const volume = parseInt(volumeText);
-    const price = orderTypeText.value === 'limit' ? parseInt(priceText) : undefined;
+    const checkRet = checkOrderInput();
+    if (checkRet.status === false) {
+      return checkRet;
+    }
+    const volume = checkRet.result.volume;
+    const price = checkRet.result.price;
 
     // check for funds amout
     let targetAmout = 0;
@@ -67,7 +119,7 @@ export const MakeOrder = (props) => {
       targetAmout = volume * price;
     }
     if ((dirTypeText.value === 'buy' && targetAmout > props.dominentBalance) ||
-        (dirTypeText.value === 'sell' && targetAmout > props.pstBalance)) {
+        (dirTypeText.value === 'sell' && targetAmout > props.tokenBalance)) {
       return {status: false, result: 'Insuffient funds!'};
     }
     if (arLessThan(props.arBalance, '0.02')) {
@@ -75,7 +127,7 @@ export const MakeOrder = (props) => {
     }
 
     const ret = await createOrder(dirTypeText.value, targetAmout, price, parseInt(props.pairId));
-    await props.onUpdateBalance();
+    // await props.onUpdateBalance();
     return ret;
   }
 
@@ -128,7 +180,7 @@ export const MakeOrder = (props) => {
         <div className='gray'>$
           {
             orderTypeText.value==='market'&&dirTypeText.value==='buy' ? 
-            props.dominentTicker : props.pstTicker
+            props.dominentTicker : props.tokenSymbol
           }
         </div>
         
@@ -146,6 +198,10 @@ export const MakeOrder = (props) => {
             <div className='gray'>${props.dominentTicker}&nbsp;</div>
           </>
         }
+      </div>
+
+      <div className='tips'>
+        Tips: {tips}
       </div>
 
       <SubmitButton 

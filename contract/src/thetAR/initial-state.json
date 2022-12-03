@@ -1,6 +1,5 @@
 {
   "owner": "replace_with_creator_wallet",
-  "feeRatio": 0.03,
   "tokenSrcTemplateHashs": [],
   "thetarTokenAddress": "replace_with_thetar_pst_address",
   "maxPairId": -1,

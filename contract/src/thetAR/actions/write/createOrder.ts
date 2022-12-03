@@ -1,5 +1,4 @@
 import * as type from '../../types/types';
-import { selectWeightedTokenHolder } from '../common';
 
 declare const ContractError;
 interface Transaction {
@@ -33,18 +32,12 @@ export const createOrder = async (
     price: param.price,
   }
 
-  let selectedFeeRecvr = undefined;
-  try {
-    selectedFeeRecvr = await selectWeightedTokenHolder(await tokenBalances(state.thetarTokenAddress));
-  } catch {}
   const { newOrderbook, newUserOrders, transactions, currentPrice } = await matchOrder(
     newOrder,
     state.orderInfos[param.pairId].orders,
     state.userOrders,
     param.pairId,
-    action.caller,
-    state.feeRatio,
-    selectedFeeRecvr,
+    action.caller
   );
 
   // update orderInfos and userOrders
@@ -69,10 +62,6 @@ export const createOrder = async (
   
   return { state };
 };
-
-const tokenBalances = async (tokenAddress) => {
-  return (await SmartWeave.contracts.readContractState(tokenAddress)).balances;
-}
 
 const checkOrderQuantity = async (
   state: type.State,
@@ -110,9 +99,7 @@ const matchOrder = async (
     }
   },
   newOrderPairId,
-  caller,
-  feeRatio: number,
-  selectedFeeRecvr: string | undefined,
+  caller
 ): Promise<{
   newOrderbook: type.orderInterface[], 
   newUserOrders: {
@@ -168,40 +155,18 @@ const matchOrder = async (
     }
 
     /// generate transactions
-
-    // step1. calculate fee
-    const dominentFee = Math.floor(targetAmout * targetPrice * feeRatio);
-    const tradeFee = Math.floor(targetAmout * feeRatio);
-    const dominentSwap = targetAmout * targetPrice - dominentFee;
-    const tradeSwap = targetAmout - tradeFee;
-
-    // step2. make swap
     const buyer = newOrder.direction === 'buy' ? newOrder : order;
     const seller = newOrder.direction === 'buy' ? order : newOrder;
     transactions.push({
       tokenType: 'dominent',
       to: seller.creator,
-      quantity: dominentSwap,
+      quantity: targetAmout * targetPrice,
     });
     transactions.push({
       tokenType: 'trade',
       to: buyer.creator,
-      quantity: tradeSwap,
+      quantity: targetAmout,
     });
-
-    // step3. transfer fee
-    if (selectedFeeRecvr) {
-      transactions.push({
-        tokenType: 'dominent',
-        to: selectedFeeRecvr,
-        quantity: dominentFee,
-      });
-      transactions.push({
-        tokenType: 'trade',
-        to: selectedFeeRecvr,
-        quantity: tradeFee,
-      });
-    }
     
     /// update Objects
 

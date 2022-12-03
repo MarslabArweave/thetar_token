@@ -8,9 +8,10 @@ import {
   Warp,
   WarpFactory,
   LoggerFactory,
+  sleep,
 } from 'warp-contracts';
 
-const calcHash = (string) => {
+const hashFunc = (string) => {
   var hash: number = 0, i, chr;
   if (string.length === 0) return hash;
   for (i = 0; i < string.length; i++) {
@@ -21,13 +22,35 @@ const calcHash = (string) => {
   return hash;
 }
 
+const warp = WarpFactory.forLocal(1984);
+const arweave = warp.arweave;
+LoggerFactory.INST.logLevel('error');
+
+const calcHashOfTokenContract = async () => {
+  const wrcSrc = fs.readFileSync(path.join(__dirname, '../pkg/erc20-contract_bg.wasm'));
+
+  const walletJwk = await arweave.wallets.generate();
+  await addFunds(arweave, walletJwk);
+
+  const SrcTxId = (await warp.createContract.deploy({
+    wallet: walletJwk,
+    initState: JSON.stringify({}),
+    src: wrcSrc,
+    wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
+    wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
+  })).srcTxId;
+
+  const srcTx = <Uint8Array>await arweave.transactions.getData(SrcTxId);
+  console.log('transaction md5 length: ', srcTx.length);
+  const hashResult = hashFunc(srcTx);
+
+  console.log('Calculate hash succeed: ', hashResult);
+  return hashResult;
+}
+
 (async () => {
   console.log('running...');
-
-  LoggerFactory.INST.logLevel('error');
-
-  const warp = WarpFactory.forLocal(1984);
-  const arweave = warp.arweave;
+  const hashResult = await calcHashOfTokenContract();
 
   const walletJwk = await arweave.wallets.generate();
   await addFunds(arweave, walletJwk);
@@ -43,7 +66,7 @@ const calcHash = (string) => {
     decimals: 2,
     totalSupply: 20000,
     balances: {
-      'moGnMJDTFyXZp0kuFKxqI57TlivDSaCk4UfsjVnD97U': 10000,
+      [walletAddress]: 10000,
     },
     allowances: {},
     settings: null,
@@ -69,7 +92,7 @@ const calcHash = (string) => {
     ...initFromFile,
     logs: [], // only for debug
     owner: walletAddress,
-    tokenSrcTemplateHashs: [0x0],
+    tokenSrcTemplateHashs: [hashResult],
     thetarTokenAddress: tarTxId,
   };
 
@@ -92,7 +115,7 @@ const calcHash = (string) => {
     decimals: 2,
     totalSupply: 20000,
     balances: {
-      'moGnMJDTFyXZp0kuFKxqI57TlivDSaCk4UfsjVnD97U': 10000,
+      [walletAddress]: 10000,
     },
     allowances: {},
     settings: null,

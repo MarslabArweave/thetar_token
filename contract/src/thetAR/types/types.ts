@@ -93,7 +93,6 @@ export interface pairInfoInterface {
 
 export interface State {
   owner: string;
-  feeRatio: number;
   tokenSrcTemplateHashs: number[];
   thetarTokenAddress: string;
   maxPairId: number;

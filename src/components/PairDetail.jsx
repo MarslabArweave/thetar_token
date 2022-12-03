@@ -4,11 +4,12 @@ import { sleep } from 'warp-contracts';
 import { 
   pairInfo,
   orderInfo,
-  getWalletAddress,
+  connectWallet,
   getBalance,
   tarAddress,
   tarSymbol,
-  tarDecimals
+  tarDecimals,
+  readState
 } from '../lib/api';
 import { MakeOrder } from './MakeOrder';
 import { OrderList } from './OrderList';
@@ -17,7 +18,6 @@ import { PageLoading } from './PageLoading/PageLoading';
 export const PairDetail = (props) => {
   const dominentSymbol = tarSymbol;
   const params = useParams();
-  const [walletAddress, setWalletAddress] = React.useState();
 
   const [arBalance, setArBalance] = React.useState('N/A');
   const [pstBalance, setPstBalance] = React.useState('N/A');
@@ -25,24 +25,12 @@ export const PairDetail = (props) => {
 
   const [pair, setPair] = React.useState();
   const [order, setOrder] = React.useState();
-  
+
   React.useEffect(async () => {
-    const tryGetWalletAddress = async () => {
-      const walletAddress = getWalletAddress();
-      if (!walletAddress) {
-        await sleep(5000);
-        tryGetWalletAddress();
-      } else {
-        setWalletAddress(walletAddress);
-      }
+    if (pair !== undefined && props.walletConnect) {
+      await fetchBalance();
     }
-
-    tryGetWalletAddress();
-  }, []);
-
-  React.useEffect(async () => {
-    await fetchBalance();
-  }, [pair&&walletAddress]);
+  }, [pair, props.walletConnect]);
 
   async function fetchBalance() {
     const arBalanceRet = await getBalance('ar');
@@ -110,14 +98,15 @@ export const PairDetail = (props) => {
 
           <hr width="90%" SIZE='1' color='#6f7a88'/>
           <MakeOrder 
-            pstTicker={pair.symbol}
-            pstBalance={pstBalance}
+            tokenSymbol={pair.symbol}
+            tokenBalance={pstBalance}
+            tokenDecimals={pair.decimals}
             dominentTicker={dominentSymbol}
             dominentBalance={dominentBalance}
             arBalance={arBalance}
             orders={order}
             pairId={pair.pairId}
-            onUpdateBalance={fetchBalance}
+            // onUpdateBalance={fetchBalance}
           />
           <hr width="90%" SIZE='1' color='#6f7a88'/>
 

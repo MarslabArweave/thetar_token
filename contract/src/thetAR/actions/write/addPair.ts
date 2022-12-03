@@ -66,4 +66,6 @@ export const addPair = async (
   return { state };
 };
 
-export const validDescription = (desc: string) => /[a-z0-9_\s\:\/-]{1,128}/i.test(desc);
+export const validDescription = (desc: string) => 
+  typeof(desc) === 'string' &&
+  desc.length <= 128;

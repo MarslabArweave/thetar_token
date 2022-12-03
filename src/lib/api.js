@@ -9,44 +9,44 @@ import { selectWeightedPstHolder } from 'smartweave';
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = 'xJ9SXNlziAAp-RrOMUKLhHDItVYiPuLSRAbtg2Fv5k4';
-const feeWalletAdrress = 'JJFq7UFAD-7P4oRV9O6hhmAEeLenrprJja6bxNisIeA';
+const thetARContractAddress = 'T6guj4aCTgp6FCZKNL00WciEjoUmt0tmPxJrr9GZEOg';
+const feeWalletAdrress = 'zQwv4kZ5q3Jm2M9mnELxzfjMlKJuUWL7CJIN33PYOG0';
 
 
-const warp = WarpFactory.forLocal(1984, undefined, {inMemory: true});
+const warp = WarpFactory.forLocal(1984);
 // const warp = WarpFactory.forTestnet();
 // const warp = WarpFactory.forMainnet();
 const arweave = warp.arweave;
 let walletAddress = undefined;
 export let isConnectWallet = false;
-export let tarAddress;
-export let tarSymbol;
-export let tarDecimals;
+export let tarAddress = "rr7L18QkTRWiaeK73oE6iY_GemSJdZsEQ_OHW3djGWo";
+export let tarSymbol = "TAR";
+export let tarDecimals = 2;
 
 let thetARContract = undefined;
 
-export async function txInfo() {
-  const txs = [
-    '8KIEY03eVHjzdnpQjbMDn-PO0CIc4AllQQPEpH8dSo8',
-    'MfcWJgngTpi3MnT683zSlrH_H0y24wP3Kt9Rthy8QeI',
-    'VYtreO_HjCyak7L2DmooBme4Ihi716-3_Gj3dlSq5RQ',
-  ]
-  let res = [];
+// export async function txInfo() {
+//   const txs = [
+//     '8KIEY03eVHjzdnpQjbMDn-PO0CIc4AllQQPEpH8dSo8',
+//     'MfcWJgngTpi3MnT683zSlrH_H0y24wP3Kt9Rthy8QeI',
+//     'VYtreO_HjCyak7L2DmooBme4Ihi716-3_Gj3dlSq5RQ',
+//   ]
+//   let res = [];
 
-  for (let i = 0; i < txs.length; i++) {
-    const tx = txs[i];
-    let ret = {tx: tx, k_v: {}};
-    const info = await arweave.transactions.get(tx);
-    info.get('tags').forEach(tag => {
-      const key = tag.get('name', {decode: true, string: true});
-      const value = tag.get('value', {decode: true, string: true});
-      ret.k_v[key] = value;
-    });
-    res.push(ret);
-  }
+//   for (let i = 0; i < txs.length; i++) {
+//     const tx = txs[i];
+//     let ret = {tx: tx, k_v: {}};
+//     const info = await arweave.transactions.get(tx);
+//     info.get('tags').forEach(tag => {
+//       const key = tag.get('name', {decode: true, string: true});
+//       const value = tag.get('value', {decode: true, string: true});
+//       ret.k_v[key] = value;
+//     });
+//     res.push(ret);
+//   }
 
-  console.log('txInfo: ', res);
-}
+//   console.log('txInfo: ', res);
+// }
 
 export async function connectWallet(walletJwk) {
   thetARContract.connect(walletJwk);
@@ -59,14 +59,14 @@ export async function connectContract() {
   thetARContract.setEvaluationOptions({
     internalWrites: true,
     allowUnsafeClient: true,
-    allowBigInt: true
+    // updateCacheForEachInteraction: true,
   });
 
-  tarAddress = (await thetARContract.readState()).cachedValue.state.thetarTokenAddress;
+  // tarAddress = (await thetARContract.readState()).cachedValue.state.thetarTokenAddress;
 
-  const tarState = (await warp.contract(tarAddress).readState()).cachedValue.state;
-  tarSymbol = tarState.symbol;
-  tarDecimals = tarState.decimals;
+  // const tarState = (await warp.contract(tarAddress).readState()).cachedValue.state;
+  // tarSymbol = tarState.symbol;
+  // tarDecimals = tarState.decimals;
 
   return {status: true, result: 'Connect contract success!'};
 }
@@ -313,12 +313,13 @@ export async function orderInfo(pairId) {
   let result = "";
   let status = true;
   try {
-    result = (await thetARContract.dryWrite({
+    result = (await thetARContract.viewState({
       function: "orderInfo",
       params: {
         pairId: pairId
       }
     })).result;
+    console.log('orderInfo', result);
   } catch (error) {
     status = false;
     result = error.message;
@@ -350,6 +351,43 @@ export async function userOrder(address) {
   }
 
   return {status: status, result: result};
+}
+
+export async function uploadImage(imgFile) {
+  if (!isConnectWallet) {
+    return {status: false, result: 'Please connect your wallet first!'};
+  }
+  const imgStream = await (await fetch(URL.createObjectURL(imgFile))).arrayBuffer();
+  const imgType = imgFile.type;
+
+  let tx = await arweave.createTransaction(
+    { data: imgStream }, 
+    'use_wallet'
+  );
+  tx.addTag('Content-Type', imgType);
+
+  await arweave.transactions.sign(tx, 'use_wallet');
+
+  let uploader = await arweave.transactions.getUploader(tx);
+  while (!uploader.isComplete) {
+    await uploader.uploadChunk();
+    console.log(`${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`);
+  }
+}
+
+export async function downloadImage(transaction) {
+  let raw = await arweave.transactions.getData(transaction, {decode: true});
+  let imgType = 'image/jpeg';
+  (await arweave.transactions.get(transaction)).get('tags').forEach(tag => {
+    let key = tag.get('name', {decode: true, string: true});
+    if (key === 'Content-Type') {
+      imgType = tag.get('value', {decode: true, string: true});
+    }
+  });
+  let blob = new Blob([raw], { type: imgType });
+  raw  = null;
+  const url = URL.createObjectURL(blob);
+  return url;
 }
 
 export async function readState() {
