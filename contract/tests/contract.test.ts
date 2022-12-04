@@ -386,6 +386,36 @@ describe('Testing thetAR Project', () => {
     expect((await user1Contract.readState()).cachedValue.state['pairInfos'].length).toEqual(0);
   });
 
+  it('test add token src Txs - ok', async () => {
+    await Initialize();
+    await userContract.writeInteraction(
+      {
+        function: 'addTokenSrcTx',
+        params: {
+          src: contractSrc,
+        }
+      }
+    );
+    await mineBlocks(1);
+
+    expect((await user1Contract.readState()).cachedValue.state['tokenSrcTxs']).toEqual([testTokenSrcId, contractSrc]);
+  });
+
+  it('test add token src Txs - permission denied', async () => {
+    await Initialize();
+    await user1Contract.writeInteraction(
+      {
+        function: 'addTokenSrcTx',
+        params: {
+          src: contractSrc,
+        }
+      }
+    );
+    await mineBlocks(1);
+
+    expect((await user1Contract.readState()).cachedValue.state['tokenSrcTxs']).toEqual([testTokenSrcId]);
+  });
+
   it('test pairInfo function', async () => {
     await Initialize();
     await addPair();
@@ -1504,5 +1534,5 @@ describe('Testing thetAR Project', () => {
       target: contractTxId
     })).result['balance']).toEqual(0);
   });
-  
+
 });
