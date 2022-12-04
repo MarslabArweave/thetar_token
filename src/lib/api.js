@@ -79,7 +79,7 @@ export function arLessThan(a, b) {
   return arweave.ar.isLessThan(arweave.ar.arToWinston(a), arweave.ar.arToWinston(b));
 }
 
-export async function addPair(pstAddress) {
+export async function addPair(tokenAddress) {
   if (!isConnectWallet) {
     return {status: false, result: 'Please connect your wallet first!'};
   }
@@ -87,7 +87,7 @@ export async function addPair(pstAddress) {
     return {status: false, result: 'Please connect contract first!'};
   }
 
-  if (!isWellFormattedAddress(pstAddress)) {
+  if (!isWellFormattedAddress(tokenAddress, description)) {
     return {status: false, result: 'Pst address not valid!'};
   }
 
@@ -98,13 +98,15 @@ export async function addPair(pstAddress) {
       {
         function: 'addPair',
         params: {
-          pstAddress: pstAddress
+          tokenAddress: tokenAddress,
+          logo: 'INVALID_00lQgApM_a3Z6bGFHYE7SXnBI6C5_2_24MQ',
+          description: description
         }
       },
       {
         transfer: {
           target: feeWalletAdrress,
-          winstonQty: await arweave.ar.arToWinston("0"),
+          winstonQty: await arweave.ar.arToWinston("10"),
         },
         disableBundling: true
       }
@@ -118,7 +120,7 @@ export async function addPair(pstAddress) {
   return {status: status, result: result};
 }
 
-export async function getBalance(pstAddress) {
+export async function getBalance(tokenAddress) {
   if (!isConnectWallet) {
     return {status: false, result: 'Please connect your wallet first!'};
   }
@@ -126,17 +128,17 @@ export async function getBalance(pstAddress) {
     return {status: false, result: 'Please connect contract first!'};
   }
 
-  if (!isWellFormattedAddress(pstAddress) && pstAddress !== 'ar') {
+  if (!isWellFormattedAddress(tokenAddress) && tokenAddress !== 'ar') {
     return {status: false, result: 'Pst address not valid!'};
   }
 
   let result = "";
   let status = true;
   try {
-    if (pstAddress === 'ar') {
+    if (tokenAddress === 'ar') {
       result = arweave.ar.winstonToAr(await arweave.wallets.getBalance(getWalletAddress()));
     } else {
-      result = await (await warp.contract(pstAddress).viewState({
+      result = await (await warp.contract(tokenAddress).viewState({
         function: 'balanceOf',
         target: getWalletAddress(),
       })).result.balance;

@@ -1,5 +1,5 @@
 import * as type from '../../types/types';
-import { hashCheck, isAddress } from '../common';
+import { securityCheck, isAddress } from '../common';
 
 declare const ContractError;
 
@@ -32,8 +32,8 @@ export const addPair = async (
       throw new ContractError('AddPair fee not right!');
     }
     
-    if (!await hashCheck(state.tokenSrcTemplateHashs, tokenAddress)) {
-      throw new ContractError('Pst contract validation check failed!');
+    if (!await securityCheck(state.tokenSrcTxs, tokenAddress)) {
+      throw new ContractError('Token contract validation check failed!');
     }
   }
   if (state.pairInfos.map(info=>info.tokenAddress).includes(tokenAddress)) {

@@ -2,7 +2,7 @@ import * as type from './types/types';
 import { addPair } from './actions/write/addPair';
 import { createOrder } from './actions/write/createOrder';
 import { cancelOrder } from './actions/write/cancelOrder';
-import { addTokenHash } from './actions/write/addTokenHash';
+import { addTokenSrcTx } from './actions/write/addTokenSrcTx';
 import { pairInfo } from './actions/read/pairInfo';
 import { pairInfos } from './actions/read/pairInfos';
 import { orderInfos } from './actions/read/orderInfos';
@@ -29,8 +29,8 @@ export async function handle(state: type.State, action: type.Action): Promise<ty
       return await orderInfo(state, action);
     case 'orderInfos':
       return await orderInfos(state, action);
-    case 'addTokenHash':
-      return await addTokenHash(state, action);
+    case 'addTokenSrcTx':
+      return await addTokenSrcTx(state, action);
     case 'userOrder':
       return await userOrder(state, action);
     default:

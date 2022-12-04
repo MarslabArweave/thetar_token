@@ -23,8 +23,8 @@ export interface tokenInfoParam {
   pstAddress: string;
 }
 
-export interface addTokenHashParam {
-  hash: number;
+export interface addTokenSrcTxParam {
+  src: string;
 }
 
 export type orderInfoParam = pairInfoParam;
@@ -93,7 +93,7 @@ export interface pairInfoInterface {
 
 export interface State {
   owner: string;
-  tokenSrcTemplateHashs: number[];
+  tokenSrcTxs: string[];
   thetarTokenAddress: string;
   maxPairId: number;
 
@@ -121,7 +121,7 @@ export type Function =
     'tokenInfos' |
     'orderInfo' |
     'orderInfos' |
-    'addTokenHash' |
+    'addTokenSrcTx' |
     'userOrder';
 
 export type Params = 
@@ -131,7 +131,7 @@ export type Params =
     pairInfoParam |
     tokenInfoParam |
     orderInfoParam |
-    addTokenHashParam |
+    addTokenSrcTxParam |
     userOrderParam;
 
 export type Result = 

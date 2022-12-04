@@ -3,18 +3,18 @@ import { isAddress } from '../common';
 
 declare const ContractError;
 
-export const addTokenHash = async (
+export const addTokenSrcTx = async (
   state: type.State,
   action: type.Action,
 ): Promise<type.ContractResult> => {
-  const param: type.addTokenHashParam = <type.addTokenHashParam>action.input.params;
-  const hash: number = param.hash;
+  const param: type.addTokenSrcTxParam = <type.addTokenSrcTxParam>action.input.params;
+  const src: string = param.src;
   
   if (action.caller !== state.owner) {
     throw new ContractError('You have no permission to modify hash list!');
   }
 
-  state.tokenSrcTemplateHashs.push(hash);
+  state.tokenSrcTxs.push(src);
 
   return { state };
 };

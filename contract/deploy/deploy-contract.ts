@@ -57,10 +57,7 @@ const calcHashOfTokenContract = async () => {
       [walletAddress]: 10000,
     },
     allowances: {},
-    settings: null,
     owner: walletAddress,
-    canEvolve: true,
-    evolve: '',
   };
 
   const tarTxId = (await warp.createContract.deploy({
@@ -78,7 +75,6 @@ const calcHashOfTokenContract = async () => {
   );
   const contractInit = {
     ...initFromFile,
-    logs: [], // only for debug
     owner: walletAddress,
     tokenSrcTemplateHashs: [hashResult],
     thetarTokenAddress: tarTxId,

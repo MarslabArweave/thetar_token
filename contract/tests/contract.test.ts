@@ -35,6 +35,7 @@ describe('Testing thetAR Project', () => {
   let tarInit: Object;
   let tarTxId: string;
   let testTokenTxId: string;
+  let testTokenSrcId: string;
 
   let user1Tar: Contract;
   let user2Tar: Contract;
@@ -56,7 +57,7 @@ describe('Testing thetAR Project', () => {
     await arlocal.stop();
   });
 
-  const calcHash = (string) => {
+  const hashFunc = (string) => {
     var hash: number = 0, i, chr;
     if (string.length === 0) return hash;
     for (i = 0; i < string.length; i++) {
@@ -64,7 +65,16 @@ describe('Testing thetAR Project', () => {
       hash = ((hash << 5) - hash) + chr;
       hash |= 0; // Convert to 32bit integer
     }
-      return hash;
+    return hash;
+  }
+  
+  const calcHashOfTokenContract = async (SrcTxId) => {
+    const srcTx = <Uint8Array>await arweave.transactions.getData(SrcTxId);
+    console.log('transaction md5 length: ', srcTx.length);
+    const hashResult = hashFunc(srcTx);
+  
+    console.log('Calculate hash succeed: ', hashResult);
+    return hashResult;
   }
 
   jest.setTimeout(15000);
@@ -106,19 +116,50 @@ describe('Testing thetAR Project', () => {
       evolve: '',
     };
 
-    tarTxId = (await warp.createContract.deploy({
+    const tarTxInfo = (await warp.createContract.deploy({
       wallet: walletJwk,
       initState: JSON.stringify(tarInit),
       src: wrcSrc,
       wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
       wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
-    })).contractTxId;
+    }));
+    tarTxId = tarTxInfo.contractTxId;
 
     user1Tar = warp.contract(tarTxId);
     user1Tar.connect(user1WalletJwk);
     user2Tar = warp.contract(tarTxId);
     user2Tar.connect(user2WalletJwk);
 
+    // deploy test pst
+    let initialState = {
+      symbol: 'TEST',
+      name: 'TEST token',
+      decimals: 2,
+      totalSupply: 20000,
+      balances: {
+        [user1WalletAddress]: 10000,
+        [user2WalletAddress]: 10000,
+      },
+      allowances: {},
+      owner: walletAddress,
+    };
+
+    const testTokenTxInfo = (await warp.createContract.deploy({
+      wallet: walletJwk,
+      initState: JSON.stringify(initialState),
+      src: wrcSrc,
+      wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
+      wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
+    }));
+    testTokenTxId = testTokenTxInfo.contractTxId;
+    testTokenSrcId = testTokenTxInfo.srcTxId;
+
+    user1TestToken = warp.contract(testTokenTxId);
+    user1TestToken.connect(user1WalletJwk);
+    user2TestToken = warp.contract(testTokenTxId);
+    user2TestToken.connect(user2WalletJwk);
+  
+    await mineBlocks(1);
 
     // deploy thetAR contract
     contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');
@@ -127,11 +168,9 @@ describe('Testing thetAR Project', () => {
     );
     contractInit = {
       ...initFromFile,
-      logs: [], // only for debug
       owner: walletAddress,
-      tokenSrcTemplateHashs: [0x0],
+      tokenSrcTxs: [testTokenSrcId],
       thetarTokenAddress: tarTxId,
-      feeRatio: 0.001
     };
 
     contractTxId = (await warp.createContract.deploy({
@@ -158,38 +197,6 @@ describe('Testing thetAR Project', () => {
       allowBigInt: true,
     }).connect(walletJwk);
     await mineBlocks(1);
-
-    // deploy test pst
-    let initialState = {
-      symbol: 'TEST',
-      name: 'TEST token',
-      decimals: 2,
-      totalSupply: 20000,
-      balances: {
-        [user1WalletAddress]: 10000,
-        [user2WalletAddress]: 10000,
-      },
-      allowances: {},
-      settings: null,
-      owner: walletAddress,
-      canEvolve: true,
-      evolve: '',
-    };
-
-    testTokenTxId = (await warp.createContract.deploy({
-      wallet: walletJwk,
-      initState: JSON.stringify(initialState),
-      src: wrcSrc,
-      wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
-      wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
-    })).contractTxId;
-
-    user1TestToken = warp.contract(testTokenTxId);
-    user1TestToken.connect(user1WalletJwk);
-    user2TestToken = warp.contract(testTokenTxId);
-    user2TestToken.connect(user2WalletJwk);
-  
-    await mineBlocks(1);
   }
 
   async function mineBlocks(times: number) {
@@ -199,7 +206,7 @@ describe('Testing thetAR Project', () => {
   }
 
   async function addPair() {
-    await userContract.writeInteraction(
+    await user1Contract.writeInteraction(
       {
         function: 'addPair',
         params: {
@@ -317,7 +324,7 @@ describe('Testing thetAR Project', () => {
     expect((await user2Tar.readState()).cachedValue.state).toEqual(tarInit);
   });
 
-  it('test add pair', async () => {
+  it('test add pair - ok', async () => {
     await Initialize();
     await addPair();
 
@@ -331,6 +338,52 @@ describe('Testing thetAR Project', () => {
       decimals: 2,
       tokenAddress: testTokenTxId
     });
+  });
+
+  it('test add pair - invalid address', async () => {
+    await Initialize();
+    await user1Contract.writeInteraction(
+      {
+        function: 'addPair',
+        params: {
+          tokenAddress: 'TEST_00000lQgApM_a3Z6bGFHYE7SXnBI6C5_2_24MQ',
+          logo: 'TEST_00000lQgApM_a3Z6bGFHYE7SXnBI6C5_2_24MQ',
+          description: 'invalid token'
+        }
+      },
+      { transfer: {
+          target: walletAddress,
+          winstonQty: await arweave.ar.arToWinston("10"),
+        }
+      }
+    );
+    await mineBlocks(1);
+
+    expect((await user1Contract.readState()).cachedValue.state['maxPairId']).toEqual(-1);
+    expect((await user1Contract.readState()).cachedValue.state['pairInfos'].length).toEqual(0);
+  });
+
+  it('test add pair - invalid security check', async () => {
+    await Initialize();
+    await user1Contract.writeInteraction(
+      {
+        function: 'addPair',
+        params: {
+          tokenAddress: contractSrc,
+          logo: 'TEST_00000lQgApM_a3Z6bGFHYE7SXnBI6C5_2_24MQ',
+          description: 'invalid token'
+        }
+      },
+      { transfer: {
+          target: walletAddress,
+          winstonQty: await arweave.ar.arToWinston("10"),
+        }
+      }
+    );
+    await mineBlocks(1);
+
+    expect((await user1Contract.readState()).cachedValue.state['maxPairId']).toEqual(-1);
+    expect((await user1Contract.readState()).cachedValue.state['pairInfos'].length).toEqual(0);
   });
 
   it('test pairInfo function', async () => {
@@ -1451,45 +1504,5 @@ describe('Testing thetAR Project', () => {
       target: contractTxId
     })).result['balance']).toEqual(0);
   });
-
-  // it('test distribute fee', async () => {
-  //   await Initialize();
-  //   await addPair();
-
-  //   await createOrder(1, 'buy', 1000, 1);
-  //   await createOrder(2, 'sell', 1000, 1);
-
-  //   expect((await user1Contract.readState()).cachedValue.state['orderInfos']['0']['orders']).toEqual([]);
-  //   expect((await user1Contract.readState()).cachedValue.state['userOrders'][user1WalletAddress]['0'].length).toEqual(0);
-  //   expect((await user1Contract.readState()).cachedValue.state['userOrders'][user2WalletAddress]).toEqual(undefined);
-  //   expect((await user1Contract.readState()).cachedValue.state['orderInfos']['0']['currentPrice']).toEqual(1);
-
-  //   // This test may NG because RANDOM number gen feature!!!
-  //   expect((await user1Tar.viewState({
-  //     function: 'balanceOf',
-  //     target: user1WalletAddress
-  //   })).result['balance']).toEqual(10000-1000+1);
-  //   expect((await user1Tar.viewState({
-  //     function: 'balanceOf',
-  //     target: user2WalletAddress
-  //   })).result['balance']).toEqual(10000+999);
-  //   expect((await user1Tar.viewState({
-  //     function: 'balanceOf',
-  //     target: contractTxId
-  //   })).result['balance']).toEqual(0);
-
-  //   expect((await user1TestToken.viewState({
-  //     function: 'balanceOf',
-  //     target: user1WalletAddress
-  //   })).result['balance']).toEqual(10000+999+1);
-  //   expect((await user1TestToken.viewState({
-  //     function: 'balanceOf',
-  //     target: user2WalletAddress
-  //   })).result['balance']).toEqual(10000-1000);
-  //   expect((await user1TestToken.viewState({
-  //     function: 'balanceOf',
-  //     target: contractTxId
-  //   })).result['balance']).toEqual(0);
-  // });
-
+  
 });
