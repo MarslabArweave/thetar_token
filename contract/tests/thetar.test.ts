@@ -162,7 +162,7 @@ describe('Testing thetAR Project', () => {
     await mineBlocks(1);
 
     // deploy thetAR contract
-    contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');
+    contractSrc = fs.readFileSync(path.join(__dirname, '../dist/thetAR/contract.js'), 'utf8');
     const initFromFile = JSON.parse(
       fs.readFileSync(path.join(__dirname, '../dist/thetAR/initial-state.json'), 'utf8')
     );

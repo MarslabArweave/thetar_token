@@ -27,8 +27,8 @@ export const Navigation = (props) => {
             <Link to="/addPair" className='menuText'>
               <Nav.Item icon={<AddIcon />}>Add Pair</Nav.Item>
             </Link>
-            <Link to="/claim" className='menuText'>
-              <Nav.Item icon={<MoneyIcon />}>Claim Token</Nav.Item>
+            <Link to="/faucet" className='menuText'>
+              <Nav.Item icon={<MoneyIcon />}>Faucet</Nav.Item>
             </Link>
             <Link to="/my" className='menuText'>
               <Nav.Item icon={<MyIcon />}>My Orders</Nav.Item>
