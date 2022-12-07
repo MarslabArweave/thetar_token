@@ -38,7 +38,7 @@ const calcHashOfTokenContract = async () => {
 
 (async () => {
   console.log('running...');
-  const hashResult = await calcHashOfTokenContract();
+  const SrcTxId = 'jxB_n6cJo4s-a66oMIGACUjERJXQfc3IoIMV3_QK-1w';
 
   const walletJwk = JSON.parse(
     fs.readFileSync(path.join(__dirname, 'key-file.json'), 'utf8')
@@ -76,7 +76,7 @@ const calcHashOfTokenContract = async () => {
   const contractInit = {
     ...initFromFile,
     owner: walletAddress,
-    tokenSrcTemplateHashs: [hashResult],
+    tokenSrcTxs: [SrcTxId],
     thetarTokenAddress: tarTxId,
   };
 
@@ -89,7 +89,6 @@ const calcHashOfTokenContract = async () => {
   contract.setEvaluationOptions({
     internalWrites: true,
     allowUnsafeClient: true,
-    allowBigInt: true,
   }).connect(walletJwk);
 
   // deploy test pst

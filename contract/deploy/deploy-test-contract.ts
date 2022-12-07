@@ -50,7 +50,6 @@ const calcHashOfTokenContract = async () => {
 
 (async () => {
   console.log('running...');
-  const hashResult = await calcHashOfTokenContract();
 
   const walletJwk = await arweave.wallets.generate();
   await addFunds(arweave, walletJwk);
@@ -83,31 +82,6 @@ const calcHashOfTokenContract = async () => {
     wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
   })).contractTxId;
 
-  // deploy thetAR contract
-  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');
-  const initFromFile = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../dist/thetAR/initial-state.json'), 'utf8')
-  );
-  const contractInit = {
-    ...initFromFile,
-    logs: [], // only for debug
-    owner: walletAddress,
-    tokenSrcTemplateHashs: [hashResult],
-    thetarTokenAddress: tarTxId,
-  };
-
-  const contractTxId = (await warp.createContract.deploy({
-    wallet: walletJwk,
-    initState: JSON.stringify(contractInit),
-    src: contractSrc,
-  })).contractTxId;
-  const contract = warp.contract(contractTxId);
-  contract.setEvaluationOptions({
-    internalWrites: true,
-    allowUnsafeClient: true,
-    allowBigInt: true,
-  }).connect(walletJwk);
-
   // deploy test pst
   let initialState = {
     symbol: 'TEST',
@@ -124,13 +98,46 @@ const calcHashOfTokenContract = async () => {
     evolve: '',
   };
 
-  const testTokenTxId = (await warp.createContract.deploy({
+  const testTokenTxInfo = (await warp.createContract.deploy({
     wallet: walletJwk,
     initState: JSON.stringify(initialState),
     src: wrcSrc,
     wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
     wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
+  }));
+  
+  const testTokenTxId = testTokenTxInfo.contractTxId;
+
+  // deploy thetAR contract
+  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');
+  const initFromFile = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../dist/thetAR/initial-state.json'), 'utf8')
+  );
+  const contractInit = {
+    ...initFromFile,
+    logs: [], // only for debug
+    owner: walletAddress,
+    tokenSrcTxs: [testTokenTxInfo.srcTxId],
+    thetarTokenAddress: tarTxId,
+  };
+
+  
+  console.log('new test token: ', (await warp.createContract.deployFromSourceTx({
+    srcTxId: testTokenTxInfo.srcTxId,
+    wallet: walletJwk,
+    initState: JSON.stringify(initialState),
+  })).contractTxId);
+
+  const contractTxId = (await warp.createContract.deploy({
+    wallet: walletJwk,
+    initState: JSON.stringify(contractInit),
+    src: contractSrc,
   })).contractTxId;
+  const contract = warp.contract(contractTxId);
+  contract.setEvaluationOptions({
+    internalWrites: true,
+    allowUnsafeClient: true,
+  }).connect(walletJwk);
 
   await contract.writeInteraction(
     {

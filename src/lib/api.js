@@ -9,8 +9,8 @@ import { selectWeightedPstHolder } from 'smartweave';
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = 'T6guj4aCTgp6FCZKNL00WciEjoUmt0tmPxJrr9GZEOg';
-const feeWalletAdrress = 'zQwv4kZ5q3Jm2M9mnELxzfjMlKJuUWL7CJIN33PYOG0';
+const thetARContractAddress = 'VAd0HwAzqRrzPfdhRnyeo97D8VpDMohkKUwHXXExtug';
+const feeWalletAdrress = 'sVF9IGUR9YVzG3HSU-MdDHBiw4LFx2MA4gB6KFCkcJc';
 
 
 const warp = WarpFactory.forLocal(1984);
@@ -19,34 +19,11 @@ const warp = WarpFactory.forLocal(1984);
 const arweave = warp.arweave;
 let walletAddress = undefined;
 export let isConnectWallet = false;
-export let tarAddress = "rr7L18QkTRWiaeK73oE6iY_GemSJdZsEQ_OHW3djGWo";
+export let tarAddress = "dGV2TFv8-NbC2Jc_-1FZfEY3t32yFff1AuRVI-zEaGU";
 export let tarSymbol = "TAR";
 export let tarDecimals = 2;
 
 let thetARContract = undefined;
-
-// export async function txInfo() {
-//   const txs = [
-//     '8KIEY03eVHjzdnpQjbMDn-PO0CIc4AllQQPEpH8dSo8',
-//     'MfcWJgngTpi3MnT683zSlrH_H0y24wP3Kt9Rthy8QeI',
-//     'VYtreO_HjCyak7L2DmooBme4Ihi716-3_Gj3dlSq5RQ',
-//   ]
-//   let res = [];
-
-//   for (let i = 0; i < txs.length; i++) {
-//     const tx = txs[i];
-//     let ret = {tx: tx, k_v: {}};
-//     const info = await arweave.transactions.get(tx);
-//     info.get('tags').forEach(tag => {
-//       const key = tag.get('name', {decode: true, string: true});
-//       const value = tag.get('value', {decode: true, string: true});
-//       ret.k_v[key] = value;
-//     });
-//     res.push(ret);
-//   }
-
-//   console.log('txInfo: ', res);
-// }
 
 export async function connectWallet(walletJwk) {
   thetARContract.connect(walletJwk);
@@ -79,7 +56,7 @@ export function arLessThan(a, b) {
   return arweave.ar.isLessThan(arweave.ar.arToWinston(a), arweave.ar.arToWinston(b));
 }
 
-export async function addPair(tokenAddress) {
+export async function addPair(tokenAddress, description) {
   if (!isConnectWallet) {
     return {status: false, result: 'Please connect your wallet first!'};
   }

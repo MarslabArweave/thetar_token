@@ -53,7 +53,7 @@ export const AddPair = (props) => {
       <SubmitButton 
         buttonText='Submit'
         buttonSize='Large'
-        submitTask={()=>addPair(pstAddress)}
+        submitTask={()=>addPair(pstAddress, description)}
       />
     </>
   );
