@@ -9,9 +9,12 @@ import { selectWeightedPstHolder } from 'smartweave';
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = 'VAd0HwAzqRrzPfdhRnyeo97D8VpDMohkKUwHXXExtug';
-const feeWalletAdrress = 'sVF9IGUR9YVzG3HSU-MdDHBiw4LFx2MA4gB6KFCkcJc';
-
+const thetARContractAddress = '-a8Is__rdly6VxYjCSEInMwv6o8TzHZ5UdKut8EVNhU';
+const faucetContractAddress = '0bvrS8Kx2F3oYob3QUlC_Kzd8a15SMNudieM2zBh6e4';
+const ownerWalletAdrress = 'AHh-D-Zl7mjnv9A64Awum0PP9eSkN46f8dSpxcgsv3k';
+export const tarAddress = "yT4jXIrYbyBHK9OWefDWbWkMKCU8wZs561IJ_Pwl1n0";
+export const tarSymbol = "TAR";
+export const tarDecimals = 5;
 
 const warp = WarpFactory.forLocal(1984);
 // const warp = WarpFactory.forTestnet();
@@ -19,14 +22,14 @@ const warp = WarpFactory.forLocal(1984);
 const arweave = warp.arweave;
 let walletAddress = undefined;
 export let isConnectWallet = false;
-export let tarAddress = "dGV2TFv8-NbC2Jc_-1FZfEY3t32yFff1AuRVI-zEaGU";
-export let tarSymbol = "TAR";
-export let tarDecimals = 2;
 
 let thetARContract = undefined;
+let faucetContract = undefined;
+let tarContract = undefined;
 
 export async function connectWallet(walletJwk) {
   thetARContract.connect(walletJwk);
+  faucetContract.connect(walletJwk);
   isConnectWallet = true;
   walletAddress = await arweave.wallets.jwkToAddress(walletJwk);
 }
@@ -39,11 +42,19 @@ export async function connectContract() {
     // updateCacheForEachInteraction: true,
   });
 
-  // tarAddress = (await thetARContract.readState()).cachedValue.state.thetarTokenAddress;
+  faucetContract = warp.contract(faucetContractAddress);
+  faucetContract.setEvaluationOptions({
+    internalWrites: true,
+    allowUnsafeClient: true,
+    // updateCacheForEachInteraction: true,
+  });
 
-  // const tarState = (await warp.contract(tarAddress).readState()).cachedValue.state;
-  // tarSymbol = tarState.symbol;
-  // tarDecimals = tarState.decimals;
+  tarContract = warp.contract(tarAddress);
+  tarContract.setEvaluationOptions({
+    internalWrites: true,
+    allowUnsafeClient: true,
+    // updateCacheForEachInteraction: true,
+  });
 
   return {status: true, result: 'Connect contract success!'};
 }
@@ -55,6 +66,13 @@ export function getWalletAddress() {
 export function arLessThan(a, b) {
   return arweave.ar.isLessThan(arweave.ar.arToWinston(a), arweave.ar.arToWinston(b));
 }
+
+export function checkAmountValidation(text) {
+  if (text === '') return true;
+  return /^[0-9\.]{1,21}$/.test(text);
+}
+
+// function used by thetAR contract
 
 export async function addPair(tokenAddress, description) {
   if (!isConnectWallet) {
@@ -82,7 +100,7 @@ export async function addPair(tokenAddress, description) {
       },
       {
         transfer: {
-          target: feeWalletAdrress,
+          target: ownerWalletAdrress,
           winstonQty: await arweave.ar.arToWinston("10"),
         },
         disableBundling: true
@@ -158,8 +176,14 @@ export async function createOrder(direction, quantity, price, pairId) {
       }
     })).result;
     
-    let token = warp.contract(direction === 'buy' ? tarAddress : pairInfo['tokenAddress']);
-    token.connect('use_wallet');
+    let token;
+    if (direction === 'buy') {
+      token = tarContract;
+    } else {
+      token = warp.contract(pairInfo['tokenAddress']);
+      token.connect('use_wallet');
+    }
+
     const transferTx = (await token.writeInteraction({
       function: 'approve',
       spender: thetARContractAddress,
@@ -382,4 +406,70 @@ export const calculatePriceWithDecimals = (price, tradePrecision) => {
   const priceWithDecimal = price * Math.pow(10, -tarDecimals) * Math.pow(10, tradePrecision);
   const precision = tarDecimals - tradePrecision > 0 ? tarDecimals - tradePrecision : 0;
   return priceWithDecimal.toFixed(precision);
+}
+
+// function used by faucet contract
+
+export const swap = async (ar) => {
+  if (!isConnectWallet) {
+    return {status: false, result: 'Please connect your wallet first!'};
+  }
+  if (!faucetContract) {
+    return {status: false, result: 'Please connect contract first!'};
+  }
+
+  let status = true;
+  let result;
+  try {
+    await faucetContract.writeInteraction(
+      {
+        function: 'swap',
+      },
+      { 
+        transfer: {
+          target: ownerWalletAdrress,
+          winstonQty: await arweave.ar.arToWinston(ar),
+        },
+        disableBundling: true
+      },
+    );
+    result = 'Claim succeed. Please wait for block mined by Arweave network. This process will take several minutes.';
+  } catch (err) {
+    status = false;
+    result = err;
+  }
+  return {status: true, result: result};
+}
+
+export const getPrice = async () => {
+  if (!faucetContract) {
+    return {status: false, result: 'Please connect contract first!'};
+  }
+
+  const ret = (await faucetContract.viewState({
+    function: 'getPrice',
+  })).result['price'];
+  return {status: true, result: ret};
+}
+
+export const getPoured = async () => {
+  if (!faucetContract) {
+    return {status: false, result: 'Please connect contract first!'};
+  }
+  
+  const ret = (await faucetContract.viewState({
+    function: 'getPoured',
+  })).result['amount'];
+  
+  return {status: true, result: ret};
+}
+
+export const getAllowance = async () => {
+  const allowance = (await tarContract.viewState({
+    function: 'allowance', 
+    owner: ownerWalletAdrress, 
+    spender: faucetContractAddress
+  })).result['allowance'];
+
+  return {status: true, result: allowance};
 }

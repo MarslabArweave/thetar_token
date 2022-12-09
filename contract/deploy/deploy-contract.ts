@@ -50,11 +50,11 @@ const calcHashOfTokenContract = async () => {
 
   const tarInit = {
     symbol: 'TAR',
-    name: 'ThetAR exchange token',
-    decimals: 2,
-    totalSupply: 20000,
+    name: 'ThetAR exchange pst',
+    decimals: 5,
+    totalSupply: 2200000000000,
     balances: {
-      [walletAddress]: 10000,
+      [walletAddress]: 2200000000000,
     },
     allowances: {},
     owner: walletAddress,
@@ -69,7 +69,7 @@ const calcHashOfTokenContract = async () => {
   })).contractTxId;
 
   // deploy thetAR contract
-  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');
+  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/thetAR/contract.js'), 'utf8');
   const initFromFile = JSON.parse(
     fs.readFileSync(path.join(__dirname, '../dist/thetAR/initial-state.json'), 'utf8')
   );
@@ -85,51 +85,40 @@ const calcHashOfTokenContract = async () => {
     initState: JSON.stringify(contractInit),
     src: contractSrc,
   })).contractTxId;
-  const contract = warp.contract(contractTxId);
-  contract.setEvaluationOptions({
-    internalWrites: true,
-    allowUnsafeClient: true,
-  }).connect(walletJwk);
-
-  // deploy test pst
-  let initialState = {
-    symbol: 'TEST',
-    name: 'TEST token',
-    decimals: 2,
-    totalSupply: 20000,
-    balances: {
-      [walletAddress]: 10000,
-    },
-    allowances: {},
-    settings: null,
+  
+  // deploy faucet contract
+  const faucetSrc = fs.readFileSync(path.join(__dirname, '../dist/faucet/contract.js'), 'utf8');
+  const faucetInitFromFile = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '../dist/faucet/initial-state.json'), 'utf8')
+  );
+  const faucetContractInit = {
+    ...faucetInitFromFile,
     owner: walletAddress,
-    canEvolve: true,
-    evolve: '',
+    tokenAddress: tarTxId,
+    price: 0.0000002
   };
-
-  const testTokenTxId = (await warp.createContract.deploy({
+  const faucetContractTxId = (await warp.createContract.deploy({
     wallet: walletJwk,
-    initState: JSON.stringify(initialState),
-    src: wrcSrc,
-    wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
-    wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
+    initState: JSON.stringify(faucetContractInit),
+    src: faucetSrc,
   })).contractTxId;
 
-  await contract.writeInteraction(
+  // add funds to faucet
+  const tarContract = warp.contract(tarTxId);
+  tarContract.connect(walletJwk);
+  await tarContract.writeInteraction(
     {
-      function: 'addPair',
-      params: {
-        tokenAddress: testTokenTxId,
-        logo: 'TEST_00000lQgApM_a3Z6bGFHYE7SXnBI6C5_2_24MQ',
-        description: 'test token'
-      }
+      function: 'approve',
+      spender: faucetContractTxId,
+      amount: 1500000000000
     }
   );
 
-  console.log(JSON.stringify((await contract.readState()).cachedValue.state));
-  console.log('txid: ', contractTxId);
   console.log('wallet address: ', walletAddress);
-  fs.writeFileSync(path.join(__dirname, 'key-file-for-test.json'), JSON.stringify(walletJwk));
-  fs.writeFileSync(path.join(__dirname, 'thetAR-txid-for-test.json'), contractTxId);
-  fs.writeFileSync(path.join(__dirname, 'testtoken-txid-for-test.json'), testTokenTxId);
+  console.log('txid: ', contractTxId);
+  console.log('TAR txid: ', tarTxId);
+  console.log('faucet txid: ', faucetContractTxId);
+  fs.writeFileSync(path.join(__dirname, 'thetAR-txid.json'), contractTxId);
+  fs.writeFileSync(path.join(__dirname, 'tar-txid.json'), tarTxId);
+  fs.writeFileSync(path.join(__dirname, 'faucet-txid.json'), tarTxId);
 })();

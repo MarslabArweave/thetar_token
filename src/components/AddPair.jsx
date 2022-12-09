@@ -52,7 +52,7 @@ export const AddPair = (props) => {
       {/* <input type="file" name="file" accept='image/png, image/jpeg' onChange={changeHandler} /><img src={logo} height='1rem' width='1rem'/> */}
       <SubmitButton 
         buttonText='Submit'
-        buttonSize='Large'
+        buttonSize='Medium'
         submitTask={()=>addPair(pstAddress, description)}
       />
     </>

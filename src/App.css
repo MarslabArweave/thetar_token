@@ -40,17 +40,7 @@ main {
   border-right: solid 1px;
   border-color: rgb(39, 50, 62);
   min-height: 100vh;
-  /* margin-left: 16rem; */
 }
-
-/* aside {
-  position: fixed;
-  width: 0rem;
-  padding-left: 1rem;
-  padding-right: 2rem;
-  padding-top: 1rem;
-  padding-bottom: 2rem;
-} */
 
 .item {
 	padding-top: 1rem;
@@ -289,4 +279,25 @@ table, th, td {
 	font-weight: 400;
   height: 0.5rem;
 	font-size: 1rem;
+}
+
+.faucetTiele {
+	margin-left: 3rem;
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: rgb(80,162,255);
+}
+
+.faucetKey {
+	margin-left: 3rem;
+  font-weight: 400;
+  font-size: 1rem;
+  color: rgb(80,162,255);
+}
+
+.faucetValue {
+	margin-left: 1rem;
+  font-weight: 400;
+  font-size: 1rem;
+  color: rgb(75, 89, 105);
 }

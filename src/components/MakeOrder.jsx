@@ -3,6 +3,7 @@ import Select from 'react-select';
 import TextareaAutosize from 'react-textarea-autosize';
 import { 
   arLessThan,
+  checkAmountValidation,
   createOrder,
   tarDecimals,
   tarSymbol
@@ -131,19 +132,14 @@ export const MakeOrder = (props) => {
     return ret;
   }
 
-  function checkTextValidation(text) {
-    if (text === '') return true;
-    return /^[0-9\.]{1,21}$/.test(text);
-  }
-
   function setVolume(value) {
-    if (checkTextValidation(value)) {
+    if (checkAmountValidation(value)) {
       setVolumeText(value);
     }
   }
 
   function setPrice(value) {
-    if (checkTextValidation(value)) {
+    if (checkAmountValidation(value)) {
       setPriceText(value);
     }
   }

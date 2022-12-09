@@ -26,7 +26,7 @@ const App = () => {
 
   if (!isContractConnected) {
     return (
-      <div className='gray'>
+      <div className='darkRow'>
         Loading Contract ...
       </div>
     );
