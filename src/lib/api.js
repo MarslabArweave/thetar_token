@@ -201,7 +201,7 @@ export async function createOrder(direction, quantity, price, pairId) {
       }
     });
     
-    result = 'Create order success!';
+    result = 'Create order succeed!';
   } catch (error) {
     status = false;
     result = error.message;
