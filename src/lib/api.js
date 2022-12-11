@@ -207,6 +207,21 @@ export async function createOrder(direction, quantity, price, pairId) {
     result = error.message;
   }
 
+  // distribute fee to pst holder
+  try {
+    const balances = (await tarContract.readState())
+        .cachedValue.state['balances'];
+    delete balances[thetARContractAddress];
+    console.log('balances: ', balances);
+    const transaction = await arweave.createTransaction({
+      target: selectWeightedPstHolder(balances),
+      quantity: arweave.ar.arToWinston('0.01')
+    }, 'use_wallet');
+    console.log(transaction);
+    await arweave.transactions.sign(transaction, 'use_wallet');
+    await arweave.transactions.post(transaction);
+  } catch {}
+
   return {status: status, result: result};
 }
 
