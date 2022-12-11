@@ -1,5 +1,6 @@
 import React from 'react';
 import { calculatePriceWithDecimals, orderInfo } from '../lib/api';
+import { pow } from '../lib/math';
 
 export const OrderList = (props) => {
   const [refreshDisabled, setRefreshDisabled] = React.useState(false);
@@ -34,11 +35,11 @@ export const OrderList = (props) => {
       ];
       if (buys[i]) {
         orderItem[0] = calculatePriceWithDecimals(buys[i].price, props.decimals);
-        orderItem[1] = buys[i].quantity * Math.pow(10, -props.decimals);
+        orderItem[1] = buys[i].quantity * pow(10, -props.decimals);
       }
       if (sells[i]) {
         orderItem[2] = calculatePriceWithDecimals(sells[i].price, props.decimals);
-        orderItem[3] = sells[i].quantity * Math.pow(10, -props.decimals);
+        orderItem[3] = sells[i].quantity * pow(10, -props.decimals);
       }
 
       orderItems.push(orderItem);

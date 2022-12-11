@@ -4,15 +4,16 @@ import {
   sleep,
 } from 'warp-contracts';
 import { selectWeightedPstHolder } from 'smartweave';
+import { mul, pow } from './math';
 /* global BigInt */
 
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = '-a8Is__rdly6VxYjCSEInMwv6o8TzHZ5UdKut8EVNhU';
-const faucetContractAddress = '0bvrS8Kx2F3oYob3QUlC_Kzd8a15SMNudieM2zBh6e4';
-const ownerWalletAdrress = 'AHh-D-Zl7mjnv9A64Awum0PP9eSkN46f8dSpxcgsv3k';
-export const tarAddress = "yT4jXIrYbyBHK9OWefDWbWkMKCU8wZs561IJ_Pwl1n0";
+const thetARContractAddress = 'mVGUTTi8CmSmh18j9SCw25fQvubuo6oIjZk_ePl7rYA';
+const faucetContractAddress = 'KoSadsup0QEYhYr-HOsN8Ym5jYXIQ-hk69cZS9vsI8g';
+const ownerWalletAdrress = 'TfflPZkVLnjXcX65y4oNwt-SdWbXqVdkSiMBZ6Dso3k';
+export const tarAddress = "Bd_duw2qkRlgv8sztOAnG4qaoUBSR4ybIc0tbHudWCY";
 export const tarSymbol = "TAR";
 export const tarDecimals = 5;
 
@@ -30,6 +31,7 @@ let tarContract = undefined;
 export async function connectWallet(walletJwk) {
   thetARContract.connect(walletJwk);
   faucetContract.connect(walletJwk);
+  tarContract.connect(walletJwk);
   isConnectWallet = true;
   walletAddress = await arweave.wallets.jwkToAddress(walletJwk);
 }
@@ -403,9 +405,7 @@ export const isWellFormattedAddress = (input) => {
 }
 
 export const calculatePriceWithDecimals = (price, tradePrecision) => {
-  const priceWithDecimal = price * Math.pow(10, -tarDecimals) * Math.pow(10, tradePrecision);
-  const precision = tarDecimals - tradePrecision > 0 ? tarDecimals - tradePrecision : 0;
-  return priceWithDecimal.toFixed(precision);
+  return mul(price, pow(10, tradePrecision-tarDecimals));
 }
 
 // function used by faucet contract

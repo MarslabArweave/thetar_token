@@ -11,13 +11,14 @@ import {
   tarDecimals,
   swap,
 } from '../lib/api';
+import { div, mul, pow, myToLocaleString } from '../lib/math';
 
 export const Faucet = (props) => {
   const [balance, setBalance] = React.useState('N/A');
   const [price, setPrice] = React.useState('N/A');
   const [poured, setPoured] = React.useState('N/A');
   const [allowance, setAllowance] = React.useState('N/A');
-  const [amount, setAmount] = React.useState('');
+  const [amount, setAmount] = React.useState(0);
 
   React.useEffect(async () => {
     if (props.walletConnect) {
@@ -30,17 +31,17 @@ export const Faucet = (props) => {
 
       ret = await getPrice();
       if (ret.status === true) {
-        setPrice(ret.result * Math.pow(10, tarDecimals));
+        setPrice(mul(ret.result, pow(10, tarDecimals)));
       }
 
       ret = await getPoured();
       if (ret.status === true) {
-        setPoured((ret.result * Math.pow(10, -tarDecimals)).toFixed(tarDecimals));
+        setPoured(mul(ret.result, pow(10, -tarDecimals)));
       }
       
       ret = await getAllowance();
       if (ret.status === true) {
-        setAllowance((ret.result * Math.pow(10, -tarDecimals)).toFixed(tarDecimals));
+        setAllowance(mul(ret.result, pow(10, -tarDecimals)));
       }
     }
   }, [props.walletConnect]);
@@ -61,7 +62,7 @@ export const Faucet = (props) => {
   }
 
   const makeSwap = async () => {
-    const arStr = (amount * price).toString();
+    const arStr = mul(amount, price).toString();
     if (arLessThan(balance, arStr)) {
       return {status: false, result: 'Insuffient $AR in your wallet!'};
     }
@@ -76,7 +77,7 @@ export const Faucet = (props) => {
       <div className='faucetTiele'>Faucet Information:</div>
       <div style={{'margin-top': '1rem'}}>
         <span className='faucetKey'>$TAR price:</span>
-        <span className='faucetValue'> 1 $TAR = {price} $AR; 1 $AR = {(1/price).toFixed(tarDecimals)} $TAR</span>
+        <span className='faucetValue'> 1 $TAR = {price} $AR; 1 $AR = {div(1, price).toFixed(tarDecimals)} $TAR</span>
       </div>
       <div style={{'margin-top': '1rem'}}>
         <span className='faucetKey'>$TAR in pool:</span>
@@ -95,9 +96,9 @@ export const Faucet = (props) => {
         title='Claim $TAR:'
         tip={
           <>❕
-            {Number.isNaN(amount) ? 
+            {Number.isNaN(Number(amount)) ? 
                 'The amount of $TAR you enter is not valid!' : 
-                'You will swap ' + amount * price + '$AR for ' + amount + '$TAR token.'
+                'You will swap ' + myToLocaleString(mul(amount, price)) + '$AR for ' + myToLocaleString(amount) + '$TAR token.'
             }
           </>
         }

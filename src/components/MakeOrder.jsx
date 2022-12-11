@@ -8,6 +8,7 @@ import {
   tarDecimals,
   tarSymbol
 } from '../lib/api';
+import { mul, pow, sub, div } from '../lib/math';
 import { SubmitButton } from './SubmitButton/SubmitButton';
 
 export const MakeOrder = (props) => {
@@ -53,82 +54,101 @@ export const MakeOrder = (props) => {
   const [volumeText, setVolumeText] = React.useState();
   const [priceText, setPriceText] = React.useState();
   const [tips, setTips] = React.useState('');
+  const [disabled, setDisabled] = React.useState(true);
 
   React.useEffect(async ()=>{
-
+    // set tips when user input changes
+    const tidyOrderInput = convertOrderInput();
     if (orderTypeText.value === 'market') {
-      setTips('This is a market order, the amount of token you will get relies on the current orders in orderbook!');
-      return;
-    }
-    const ret = checkOrderInput();
-    if (ret.status) {
-      const vol = ret.result.volume * Math.pow(10, -props.tokenDecimals);
-      const price = ret.result.price * 
-          Math.pow(10, tarDecimals)*
-          Math.pow(10, -props.tokenDecimals);
-      if (dirTypeText.value === 'buy') {
-        setTips(`You will swap ${vol*price}$${tarSymbol} for ${vol}$${props.tokenSymbol}`);
-      } else {
-        setTips(`You will swap ${vol}$${props.tokenSymbol} for ${vol*price}$${tarSymbol}`);
-      }
+      processMarketOrder(tidyOrderInput);
     } else {
-      setTips(ret.result);
+      processLimitOrder(tidyOrderInput);
     }
   }, [volumeText, priceText, dirTypeText, orderTypeText]);
 
-  function checkOrderInput() {
+  function convertOrderInput() {
     const decimals = 
         orderTypeText.value==='market' && dirTypeText.value==='buy' ? 
         tarDecimals : props.tokenDecimals;
-    const volume = Math.floor(Number(volumeText) * Math.pow(10, decimals));
-    if (volume === 0) {
-      return {status: false, result: `Amount should be at least ${Math.pow(10, -decimals)} !`};
-    }
+    
+    // priceWithDecimals * priceCoeff = priceWithoutDecimals
+    const priceCoeff = pow(10, tarDecimals-props.tokenDecimals);
+
+    // priceWithDecimals * volumeCoeff = priceWithoutDecimals
+    const volumeCoeff = pow(10, decimals);
+
+    const volume = Math.floor(mul(Number(volumeText), pow(10, decimals)));
+
     const price = orderTypeText.value === 'limit' ? 
         Math.floor(
-          Number(priceText)*
-          Math.pow(10, -tarDecimals)*
-          Math.pow(10, props.tokenDecimals)
-        ) : undefined;
-    if (price === 0) {
-      return {status: false, result: `Price should be greater than $
-        ${tarSymbol} 
-        ${Math.pow(10, -tarDecimals)*Math.pow(10, props.tokenDecimals)} !`
-      };
+          mul(Number(priceText),
+          priceCoeff
+        )) : undefined;
+    
+    return {decimals, volume, price, priceCoeff, volumeCoeff};
+  }
+
+  function processMarketOrder(tidyOrderInput) {
+    if (tidyOrderInput.volume === 0) {
+      setTips(`Minimum volume is ${pow(10, -tidyOrderInput.decimals)}!`);
+      setDisabled(true);
+      return false;
     }
-    return {status: true, result: {volume: volume, price: price}};
+    setTips('This is a market order, the amount of token you will get relies on the current orders in orderbook!');
+    setDisabled(false);
+    return true;
+  }
+
+  function processLimitOrder(tidyOrderInput) {
+    if (tidyOrderInput.volume <= 0) {
+      setTips(`Minimum volume is ${pow(10, -tidyOrderInput.decimals)}!`);
+      setDisabled(true);
+      return false;
+    }
+    if (tidyOrderInput.price <= 0) {
+      setTips(`Minimum price is ${div(1, tidyOrderInput.priceCoeff)}!`);
+      setDisabled(true);
+      return false;
+    }
+
+    const vol = div(tidyOrderInput.volume, tidyOrderInput.volumeCoeff);
+    const price = div(tidyOrderInput.price, tidyOrderInput.priceCoeff);
+    if (dirTypeText.value === 'buy') {
+      setTips(`You will swap ${mul(vol,price)}$${tarSymbol} for ${vol}$${props.tokenSymbol}`);
+    } else {
+      setTips(`You will swap ${vol}$${props.tokenSymbol} for ${mul(vol,price)}$${tarSymbol}`);
+    }
+    setDisabled(false);
+    return true;
   }
 
   async function onMakeOrder() {
     // check for order type
     if (orderTypeText.value === 'market' && props.orders.length === 0) {
-      return {status: false, result: 'No orders in orderbook, cannot create market order now!'};
+      return {status: false, result: 'No orders in orderbook, cannot create market order for you!'};
     }
 
-    const checkRet = checkOrderInput();
-    if (checkRet.status === false) {
-      return checkRet;
-    }
-    const volume = checkRet.result.volume;
-    const price = checkRet.result.price;
+    const orderInput = convertOrderInput();
+    const volume = orderInput.volume;
+    const price = orderInput.price;
 
     // check for funds amout
     let targetAmout = 0;
     if (orderTypeText.value === 'market' || dirTypeText.value === 'sell') {
       targetAmout = volume;
     } else {
-      targetAmout = volume * price;
+      targetAmout = mul(volume, price);
     }
     if ((dirTypeText.value === 'buy' && targetAmout > props.dominentBalance) ||
         (dirTypeText.value === 'sell' && targetAmout > props.tokenBalance)) {
       return {status: false, result: 'Insuffient funds!'};
     }
     if (arLessThan(props.arBalance, '0.02')) {
-      return {status: false, result: 'You should have at least 0.02$AR in your wallet to pay for fees!'};
+      return {status: false, result: 'You should have at least 0.02$AR in your wallet to pay for network fee!'};
     }
 
     const ret = await createOrder(dirTypeText.value, targetAmout, price, parseInt(props.pairId));
-    // await props.onUpdateBalance();
+    await props.onUpdateBalance();
     return ret;
   }
 
@@ -142,6 +162,13 @@ export const MakeOrder = (props) => {
     if (checkAmountValidation(value)) {
       setPriceText(value);
     }
+  }
+
+  function buttonDisabled() {
+    if (!dirTypeText || !volumeText || (orderTypeText.value === 'limit' && !priceText)) {
+      return true;
+    }
+    return disabled;
   }
 
   return (
@@ -203,8 +230,8 @@ export const MakeOrder = (props) => {
       <SubmitButton 
         buttonText='Create Order'
         buttonSize='Medium'
+        disabled={buttonDisabled()}
         submitTask={onMakeOrder}
-        disabled={!dirTypeText || !volumeText || (orderTypeText.value === 'limit' && !priceText)}
       />
     </>
   );

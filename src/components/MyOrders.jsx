@@ -3,8 +3,11 @@ import {
   cancelOrder,
   getWalletAddress, 
   pairInfo, 
+  tarDecimals, 
+  tarSymbol, 
   userOrder
 } from '../lib/api';
+import { mul, pow } from '../lib/math';
 import { ProgressSpinner } from './ProgressSpinner/ProgressSpinner';
 
 export const MyOrders = (props) => {
@@ -69,8 +72,8 @@ export const MyOrders = (props) => {
 };
 
 const OrderItem = (props) => {
-  const [pstTicker, setPstTicker] = React.useState('X1');
-  const [dominentTicker, setDominentTicker] = React.useState('X2');
+  const [tokenSymbol, setTokenSymbol] = React.useState('Loading');
+  const [tokenDecimals, setTokenDecimals] = React.useState(0);
   const [isCancelling, setIsCancelling] = React.useState(false);
 
   React.useEffect(async () => {
@@ -80,15 +83,8 @@ const OrderItem = (props) => {
     if (!pairInfoRet.status) {
       return;
     }
-
-    // const pstInfoRet = await tokenInfo(pairInfoRet.result.tokenAddress);
-    // if (pstInfoRet.status) {
-    //   setPstTicker(pstInfoRet.result.ticker);
-    // }
-    // const dominentInfoRet = await tokenInfo(pairInfoRet.result.dominantTokenAddress);
-    // if (dominentInfoRet.status) {
-    //   setDominentTicker(dominentInfoRet.result.ticker);
-    // }
+    setTokenSymbol(pairInfoRet.result.symbol);
+    setTokenDecimals(pairInfoRet.result.decimals);
   }, []);
 
   function renderDirection() {
@@ -115,14 +111,14 @@ const OrderItem = (props) => {
       <div className="layout">
         <div>
           <div className="itemRow"> 
-          <span className='blue'>Pair:</span> #{props.pairId} ${pstTicker} / ${dominentTicker}
+          <span className='blue'>Pair:</span> #{props.pairId} (${tokenSymbol} / ${tarSymbol})
           </div>
           <div className="itemRow"> 
             <span className='blue'>Direction:</span> {renderDirection()}
             &nbsp;&nbsp;&nbsp;
-            <span className='blue'>Price:</span> {props.price} ${dominentTicker}
+            <span className='blue'>Price:</span> {mul(props.price, pow(10, tokenDecimals-tarDecimals))} ${tarSymbol}
             &nbsp;&nbsp;&nbsp;
-            <span className='blue'>Amount:</span> {props.amount} ${pstTicker}
+            <span className='blue'>Amount:</span> {mul(props.amount, pow(10, -tokenDecimals))} ${tokenSymbol}
           </div>
           <div className="itemRow"> 
             { isCancelling ? 

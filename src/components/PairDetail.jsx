@@ -106,7 +106,7 @@ export const PairDetail = (props) => {
             arBalance={arBalance}
             orders={order}
             pairId={pair.pairId}
-            // onUpdateBalance={fetchBalance}
+            onUpdateBalance={fetchBalance}
           />
           <hr width="90%" SIZE='1' color='#6f7a88'/>
 
