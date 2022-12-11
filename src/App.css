@@ -301,3 +301,10 @@ table, th, td {
   font-size: 1rem;
   color: rgb(75, 89, 105);
 }
+
+.documentation {
+  margin-left: 2.5rem;
+  margin-right: 2rem;
+  font-size: medium;
+  color: rgb(163, 161, 161);
+}

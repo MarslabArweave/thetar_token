@@ -13,6 +13,7 @@ import { My } from './components/My';
 import { PairDetail } from './components/PairDetail';
 import { sleep } from 'warp-contracts';
 import { Faucet } from './components/Faucet';
+import { About } from './components/About';
 
 const App = () => {
   const [isContractConnected, setIsContractConnected] = React.useState(false);
@@ -85,7 +86,7 @@ const MyFrame = (props) => {
 const AboutFrame = () => {
   return (
     <>
-      <p>about</p>
+      <About />
     </>
   );
 };
