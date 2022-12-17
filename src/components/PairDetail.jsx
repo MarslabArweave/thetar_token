@@ -83,7 +83,7 @@ export const PairDetail = (props) => {
 
           <div className='PairDetailInfo'>
             Token Address:&nbsp;&nbsp;
-            <a href={`https://www.arweave.net/_tfx0j4nhCwRDYmgU6XryFDceF52ncPKVivot5ijwdQ/${pair.tokenAddress}`}> 
+            <a href={`https://www.arweave.net/_tfx0j4nhCwRDYmgU6XryFDceF52ncPKVivot5ijwdQ/#/${pair.tokenAddress}`}> 
               {pair.tokenAddress} 
             </a>
           </div>
