@@ -1,7 +1,6 @@
 import {
   WarpFactory,
   LoggerFactory,
-  sleep,
 } from 'warp-contracts';
 import { selectWeightedPstHolder } from 'smartweave';
 import { mul, pow } from './math';
@@ -19,7 +18,10 @@ export const tarDecimals = 5;
 
 const warp = WarpFactory.forLocal(1984);
 // const warp = WarpFactory.forTestnet();
-// const warp = WarpFactory.forMainnet();
+// const warp = WarpFactory.forMainnet({
+//   dbLocation: './cache/warp'+(new Date().getTime()).toString(), 
+//   inMemory: false
+// });
 const arweave = warp.arweave;
 let walletAddress = undefined;
 export let isConnectWallet = false;

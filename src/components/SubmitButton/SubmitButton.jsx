@@ -1,5 +1,6 @@
 import React from 'react';
 import "./SubmitButton.css";
+import { Loader, useToaster, Message } from 'rsuite';
 
 /*
  * @props buttonText: string.
@@ -11,18 +12,20 @@ import "./SubmitButton.css";
 */
 export const SubmitButton = (props) => {
     const [disabled, setDisabled] = React.useState(false);
-    const [submitResult, setSubmitResult] = React.useState("");
-    const [buttonText, setButtonText] = React.useState(props.buttonText);
+    const [loading, setLoading] = React.useState(false);
+    const toaster = useToaster();
+
+    const toast = (type, message) => 
+      <Message type={type} header={message} closable showIcon />
 
     async function onButtonClicked() {
       setDisabled(true);
-      setSubmitResult("");
-      setButtonText(props.buttonText+' ...');
+      setLoading(true);
       props.submitTask().then(ret => {
         console.log('onButtonClicked ret: ', ret);
         setDisabled(false);
-        setSubmitResult(ret.result);
-        setButtonText(props.buttonText);
+        setLoading(false);
+        toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result), {placement: 'bottomEnd'});
         if (ret.status === false) {
           if (props.onFailed) {
             props.onFailed(ret);
@@ -38,13 +41,14 @@ export const SubmitButton = (props) => {
     
     return (
       <>
-        {submitResult !== '' &&
-          <div className='centerResult'>
-            <div className="darkRow">{submitResult}</div>
-          </div>
-        }
+        {loading && <Loader center inverse backdrop content={props.buttonText+' ...'} style={{height: document.body.scrollHeight*1.8}} />}
+
         <div className='centerButton'>
-          <button className={`submitButton${props.buttonSize}`} disabled={props.disabled===true?true:disabled} onClick={onButtonClicked}>{buttonText}</button>
+          <button 
+            className={`submitButton${props.buttonSize}`} 
+            disabled={props.disabled===true?true:disabled} 
+            onClick={onButtonClicked}>{props.buttonText}
+          </button>
         </div>
       </>
     );

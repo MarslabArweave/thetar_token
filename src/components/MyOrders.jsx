@@ -8,10 +8,12 @@ import {
   userOrder
 } from '../lib/api';
 import { mul, pow } from '../lib/math';
+import { Loader, useToaster, Message } from 'rsuite';
 import { ProgressSpinner } from './ProgressSpinner/ProgressSpinner';
 
 export const MyOrders = (props) => {
   const [userOrders, setUserOrders] = React.useState();
+  const [cancelling, setCancelling] = React.useState(false);
 
   React.useEffect(async () => {
     fetchUserOrders();
@@ -40,6 +42,7 @@ export const MyOrders = (props) => {
         }
         
         setUserOrders(items);
+        setCancelling(false);
       }
     });
   }
@@ -57,7 +60,16 @@ export const MyOrders = (props) => {
   }
   
   return (
-    <div>
+    <>
+      {
+        cancelling && 
+        <Loader 
+          center inverse backdrop 
+          content= 'cancelling ...' 
+          style= {{height: document.body.scrollHeight*1.8}}
+        />
+      }
+
       {userOrders.map(e=><OrderItem 
         key={e.orderId}
         onUpdate={fetchUserOrders}
@@ -66,8 +78,9 @@ export const MyOrders = (props) => {
         direction={e.direction}
         price={e.price}
         amount={e.amount}
+        onCancelling={setCancelling}
       />)}
-    </div>
+    </>
   );
 };
 
@@ -75,6 +88,10 @@ const OrderItem = (props) => {
   const [tokenSymbol, setTokenSymbol] = React.useState('Loading');
   const [tokenDecimals, setTokenDecimals] = React.useState(0);
   const [isCancelling, setIsCancelling] = React.useState(false);
+  const toaster = useToaster();
+
+  const toast = (type, message) => 
+    <Message type={type} header={message} closable showIcon />
 
   React.useEffect(async () => {
     const pairId = parseInt(props.pairId);
@@ -97,10 +114,10 @@ const OrderItem = (props) => {
 
   async function onCancel() {
     console.log('on cancel: ', props.pairId, props.orderId);
+    props.onCancelling(true);
     setIsCancelling(true);
     const ret = await cancelOrder(parseInt(props.pairId), props.orderId);
-    alert(ret.result);
-    // setIsCancelling(false);
+    toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result), {placement: 'bottomEnd'});
     if (ret.status) {
       props.onUpdate();
     }
@@ -123,7 +140,7 @@ const OrderItem = (props) => {
           <div className="itemRow"> 
             { isCancelling ? 
               <div className='cancelOrder'>cancelling...</div> :
-              <div onClick={onCancel} className='cancelOrder'>cancel</div>
+              <div onClick={onCancel} className='cancelOrder'> cancel </div>
             }
           </div>
         </div>

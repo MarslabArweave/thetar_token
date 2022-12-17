@@ -1,15 +1,12 @@
 import React from 'react';
 import { useParams } from "react-router-dom";
-import { sleep } from 'warp-contracts';
 import { 
   pairInfo,
   orderInfo,
-  connectWallet,
   getBalance,
   tarAddress,
   tarSymbol,
-  tarDecimals,
-  readState
+  tarDecimals
 } from '../lib/api';
 import { MakeOrder } from './MakeOrder';
 import { OrderList } from './OrderList';
@@ -69,7 +66,7 @@ export const PairDetail = (props) => {
   }
 
   return (
-    <>
+    <div>
       <PageLoading 
         submitTask={fetchInfos}
       />
@@ -117,6 +114,6 @@ export const PairDetail = (props) => {
           />
         </>
       }
-    </>
+    </div>
   );
 };

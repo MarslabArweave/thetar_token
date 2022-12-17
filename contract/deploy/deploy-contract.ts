@@ -1,40 +1,13 @@
 import fs from 'fs';
-import Arweave from 'arweave';
-import { JWKInterface } from 'arweave/node/lib/wallet';
 import path from 'path';
-import { addFunds, mineBlock } from '../utils/_helpers';
 import {
-  PstState,
-  Warp,
   WarpFactory,
   LoggerFactory,
-  sleep,
 } from 'warp-contracts';
-
-const hashFunc = (string) => {
-  var hash: number = 0, i, chr;
-  if (string.length === 0) return hash;
-  for (i = 0; i < string.length; i++) {
-    chr = string.charCodeAt(i);
-    hash = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-}
 
 const warp = WarpFactory.forMainnet();
 const arweave = warp.arweave;
 LoggerFactory.INST.logLevel('error');
-
-const calcHashOfTokenContract = async () => {
-  const SrcTxId = 'jxB_n6cJo4s-a66oMIGACUjERJXQfc3IoIMV3_QK-1w';
-  const srcTx = <Uint8Array>await arweave.transactions.getData(SrcTxId);
-  console.log('transaction md5 length: ', srcTx.length);
-  const hashResult = hashFunc(srcTx);
-
-  console.log('Calculate hash succeed: ', hashResult);
-  return hashResult;
-}
 
 (async () => {
   console.log('running...');
