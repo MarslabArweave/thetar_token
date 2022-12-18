@@ -25,7 +25,7 @@ export const SubmitButton = (props) => {
         console.log('onButtonClicked ret: ', ret);
         setDisabled(false);
         setLoading(false);
-        toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result), {placement: 'bottomEnd'});
+        toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result));
         if (ret.status === false) {
           if (props.onFailed) {
             props.onFailed(ret);

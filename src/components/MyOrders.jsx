@@ -117,7 +117,7 @@ const OrderItem = (props) => {
     props.onCancelling(true);
     setIsCancelling(true);
     const ret = await cancelOrder(parseInt(props.pairId), props.orderId);
-    toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result), {placement: 'bottomEnd'});
+    toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result));
     if (ret.status) {
       props.onUpdate();
     }

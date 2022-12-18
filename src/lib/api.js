@@ -9,19 +9,19 @@ import { mul, pow } from './math';
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = 'mVGUTTi8CmSmh18j9SCw25fQvubuo6oIjZk_ePl7rYA';
-const faucetContractAddress = 'KoSadsup0QEYhYr-HOsN8Ym5jYXIQ-hk69cZS9vsI8g';
-const ownerWalletAdrress = 'TfflPZkVLnjXcX65y4oNwt-SdWbXqVdkSiMBZ6Dso3k';
-export const tarAddress = "Bd_duw2qkRlgv8sztOAnG4qaoUBSR4ybIc0tbHudWCY";
+const thetARContractAddress = 'PmwpiDuBdeA0Q9-BjgUrSWUSxXOtHd2K4uvIuhKmy48';
+const faucetContractAddress = '8DrnOTZ5glVjkzG39xymrd5PviwxhQOlSW5AoNVb0Ts';
+const ownerWalletAdrress = 'g-HsAODsIOoTG4MgvmeOTmqyA_RKMupujUuok-nrmkg';
+export const tarAddress = "R6hGRrILpe2aGJBwxlze7WBNnVwwRRqwXDq_8okKJUA";
 export const tarSymbol = "TAR";
 export const tarDecimals = 5;
 
-const warp = WarpFactory.forLocal(1984);
+// const warp = WarpFactory.forLocal(1984);
 // const warp = WarpFactory.forTestnet();
-// const warp = WarpFactory.forMainnet({
-//   dbLocation: './cache/warp'+(new Date().getTime()).toString(), 
-//   inMemory: false
-// });
+const warp = WarpFactory.forMainnet({
+  dbLocation: './cache/warp'+(new Date().getTime()).toString(), 
+  inMemory: false
+});
 const arweave = warp.arweave;
 let walletAddress = undefined;
 export let isConnectWallet = false;
