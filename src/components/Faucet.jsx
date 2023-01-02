@@ -74,7 +74,7 @@ export const Faucet = (props) => {
   
   return (
     <>
-      <div className='faucetTiele'>Faucet Information:</div>
+      <div className='faucetTitle'>Faucet Information(stage 1):</div>
       <div style={{'margin-top': '1rem'}}>
         <span className='faucetKey'>$TAR price:</span>
         <span className='faucetValue'> 1 $TAR = {price} $AR; 1 $AR = {div(1, price).toFixed(tarDecimals)} $TAR</span>

@@ -16,19 +16,21 @@ The total amount of $TAR is 22M, with an accuracy of 0.00001.
 
 Among them: 
 
-- 15M will be sold in three tranches on the [faucet tab](#/faucet) when the mainnet launches.
+- 15M will be sold in three stages on the [faucet tab](#/faucet) when the mainnet launches:
 
-**Chart**
+  - 4M with price of 0.01$AR
+
+  - 5M with price of 0.02$AR
+
+  - 6M with price of 0.03$AR
 
 - 3M will be distributed to developers of the Arweave ecosystem when the mainnet launches.
 
-- 4M will be stored in the MarsLab team wallet, which is used for rewards and developer incentives for various activities.
-
-**Chart**
+- 4M will be stored in the team wallet, which is used for airdrop and developer incentives.
 
 ### About transaction fee
 
-For every transaction you create on the exchange (when you click the `Create Orker` button), we charge a fixed 0.01 $AR token as a transaction fee. Transaction fees will be distributed to $TAR token holders in accordance with standard Arweave community profit sharing rules.
+For every order you create on the exchange (when you click the `Create Order` button), we charge a fixed 0.01 $AR token as a transaction fee. Transaction fees will be distributed to $TAR token holders in accordance with standard Arweave community profit sharing rules.
 
 ### About pair adding fee
 
@@ -48,7 +50,7 @@ When your order is a limit order, the order price is denominated in $TAR. The mi
 
 ### About certification for pair
 
-Anyone can add trading pairs on the exchange, and there are no restrictions on the name or symbol of the token. In order to ensure the safety of users, To protect users' security, we will mark verified tokens that have been security-authenticated with a verified icon() in the list of trading pairs, to make it easy for users to choose.
+Anyone can add trading pairs on the exchange, and there are no restrictions on the name or symbol of the token. In order to ensure the safety of users, To protect users' security, we will mark verified tokens that have been security-authenticated with a verified icon in the list of trading pairs, to make it easy for users to choose.
 
 The verified mark only indicates that this token has audited by the MarsLab team, and team is not responsible for the price fluctuations of the token itself.
 

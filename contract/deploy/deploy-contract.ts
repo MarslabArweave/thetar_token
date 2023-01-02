@@ -68,7 +68,7 @@ LoggerFactory.INST.logLevel('error');
     ...faucetInitFromFile,
     owner: walletAddress,
     tokenAddress: tarTxId,
-    price: 0.0000002
+    price: 0.0000001
   };
   const faucetContractTxId = (await warp.createContract.deploy({
     wallet: walletJwk,
@@ -83,7 +83,7 @@ LoggerFactory.INST.logLevel('error');
     {
       function: 'approve',
       spender: faucetContractTxId,
-      amount: 1500000000000
+      amount: 400000000000
     }
   );
 

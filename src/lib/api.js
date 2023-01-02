@@ -90,6 +90,12 @@ export async function addPair(tokenAddress, description) {
     return {status: false, result: 'Pst address not valid!'};
   }
 
+  const txRet = await arweave.transactions.getStatus(tokenAddress);
+  if (txRet.status !== 200 || txRet.confirmed.number_of_confirmations < 10) {
+    return {status: false, result: 'Cannot find token address on Arweave Network, \
+        please check token address or wait for the block to be mined!'};
+  }
+
   let result = "";
   let status = true;
   try {
