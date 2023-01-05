@@ -179,7 +179,7 @@ export async function createOrder(direction, quantity, price, pairId) {
   let result = "";
   let status = true;
   try {
-    const pairInfo = (await thetARContract.dryWrite({
+    const pairInfo = (await thetARContract.viewState({
       function: 'pairInfo',
       params: {
         pairId: pairId
@@ -245,7 +245,7 @@ export async function pairInfo(pairId) {
   let result = "";
   let status = true;
   try {
-    result = (await thetARContract.dryWrite({
+    result = (await thetARContract.viewState({
       function: "pairInfo",
       params: {
         pairId: pairId
@@ -300,7 +300,7 @@ export async function pairInfos() {
   let result = "";
   let status = true;
   try {
-    result = (await thetARContract.dryWrite({
+    result = (await thetARContract.viewState({
       function: "pairInfos",
     })).result;
   } catch (error) {
@@ -319,7 +319,7 @@ export async function orderInfos() {
   let result = "";
   let status = true;
   try {
-    result = (await thetARContract.dryWrite({
+    result = (await thetARContract.viewState({
       function: "orderInfos",
     })).result;
   } catch (error) {
@@ -367,7 +367,7 @@ export async function userOrder(address) {
   let result = "";
   let status = true;
   try {
-    result = (await thetARContract.dryWrite({
+    result = (await thetARContract.viewState({
       function: "userOrder",
       params: {
         address: address
@@ -444,7 +444,7 @@ export const swap = async (ar) => {
   let status = true;
   let result;
   try {
-    await faucetContract.writeInteraction(
+    const tx = await faucetContract.writeInteraction(
       {
         function: 'swap',
       },
@@ -456,7 +456,8 @@ export const swap = async (ar) => {
         disableBundling: true
       },
     );
-    result = 'Claim succeed. Please wait for block mined by Arweave network. This process will take several minutes.';
+    console.log('faucet swap: ', tx);
+    result = 'Succeed. Please wait for block to be mined.';
   } catch (err) {
     status = false;
     result = err;
