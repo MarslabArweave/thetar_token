@@ -79,10 +79,10 @@ export async function addPair(tokenAddress, description) {
   if (!isWellFormattedAddress(tokenAddress)) {
     return {status: false, result: 'Token address not valid!'};
   }
-  const arBalanceRet = await getBalance('ar');
-  if (arBalanceRet.status && arLessThan(arBalanceRet.result, '10')) {
-    return {status: false, result: 'You should have at least 10$AR in wallet to pay for fee!'};
-  }
+  // const arBalanceRet = await getBalance('ar');
+  // if (arBalanceRet.status && arLessThan(arBalanceRet.result, '10')) {
+  //   return {status: false, result: 'You should have at least 10$AR in wallet to pay for fee!'};
+  // }
 
   const txRet = await arweave.transactions.getStatus(tokenAddress);
   if (txRet.status !== 200 || txRet.confirmed.number_of_confirmations < 10) {
