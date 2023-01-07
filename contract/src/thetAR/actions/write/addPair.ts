@@ -23,14 +23,14 @@ export const addPair = async (
 
 
   if (action.caller !== state.owner) {
-    const txQty = SmartWeave.transaction.quantity;
-    const txTarget = SmartWeave.transaction.target;
-    if (txTarget !== state.owner) {
-      throw new ContractError('AddPair fee sent to wrong target!');
-    }
-    if (SmartWeave.arweave.ar.isLessThan(txQty, SmartWeave.arweave.ar.arToWinston('10'))) {
-      throw new ContractError('AddPair fee not right!');
-    }
+    // const txQty = SmartWeave.transaction.quantity;
+    // const txTarget = SmartWeave.transaction.target;
+    // if (txTarget !== state.owner) {
+    //   throw new ContractError('AddPair fee sent to wrong target!');
+    // }
+    // if (SmartWeave.arweave.ar.isLessThan(txQty, SmartWeave.arweave.ar.arToWinston('10'))) {
+    //   throw new ContractError('AddPair fee not right!');
+    // }
     
     if (!await securityCheck(state.tokenSrcTxs, tokenAddress)) {
       throw new ContractError('Token contract validation check failed!');

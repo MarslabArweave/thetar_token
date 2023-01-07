@@ -7,7 +7,7 @@ import { PageLoading } from './PageLoading/PageLoading';
 import { PairList } from './PairList';
 import { SearchFrame } from './SearchFrame/SearchFrame';
 
-const trustPairIds = [0];
+const trustPairIds = [];
 
 export const Home = (props) => {
   const [pairs, setPairInfos] = React.useState();

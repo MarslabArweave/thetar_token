@@ -9,10 +9,10 @@ import { intelliContract } from './intelliContract';
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = 'PmwpiDuBdeA0Q9-BjgUrSWUSxXOtHd2K4uvIuhKmy48';
-const faucetContractAddress = '8DrnOTZ5glVjkzG39xymrd5PviwxhQOlSW5AoNVb0Ts';
+const thetARContractAddress = '8oYBN0qzG5RfiS-FrawPTS6xsHNqDyhWHprNxRIi848';
+const faucetContractAddress = 't1iM0vBgtQ7N5ylTi3NNltICP5fGHWt-h-nDQ4cOKFs';
 const ownerWalletAdrress = 'g-HsAODsIOoTG4MgvmeOTmqyA_RKMupujUuok-nrmkg';
-export const tarAddress = "R6hGRrILpe2aGJBwxlze7WBNnVwwRRqwXDq_8okKJUA";
+export const tarAddress = "LmKB9iVSNxoYTNKdJruBSfcceJLKQb_mXa4aZrWk2N0";
 export const tarSymbol = "TAR";
 export const tarDecimals = 5;
 
@@ -103,10 +103,10 @@ export async function addPair(tokenAddress, description) {
         }
       },
       {
-        transfer: {
-          target: ownerWalletAdrress,
-          winstonQty: await arweave.ar.arToWinston("10"),
-        },
+        // transfer: {
+        //   target: ownerWalletAdrress,
+        //   winstonQty: await arweave.ar.arToWinston("10"),
+        // },
         disableBundling: true
       }
     );
@@ -210,19 +210,19 @@ export async function createOrder(direction, quantity, price, pairId) {
   }
 
   // distribute fee to pst holder
-  try {
-    const balances = (await tarContract.readState())
-        .cachedValue.state['balances'];
-    delete balances[thetARContractAddress];
-    console.log('balances: ', balances);
-    const transaction = await arweave.createTransaction({
-      target: selectWeightedPstHolder(balances),
-      quantity: arweave.ar.arToWinston('0.01')
-    }, 'use_wallet');
-    console.log(transaction);
-    await arweave.transactions.sign(transaction, 'use_wallet');
-    await arweave.transactions.post(transaction);
-  } catch {}
+  // try {
+  //   const balances = (await tarContract.readState())
+  //       .cachedValue.state['balances'];
+  //   delete balances[thetARContractAddress];
+  //   console.log('balances: ', balances);
+  //   const transaction = await arweave.createTransaction({
+  //     target: selectWeightedPstHolder(balances),
+  //     quantity: arweave.ar.arToWinston('0.01')
+  //   }, 'use_wallet');
+  //   console.log(transaction);
+  //   await arweave.transactions.sign(transaction, 'use_wallet');
+  //   await arweave.transactions.post(transaction);
+  // } catch {}
 
   return {status: status, result: result};
 }
@@ -442,13 +442,13 @@ export const swap = async (ar) => {
       {
         function: 'swap',
       },
-      { 
-        transfer: {
-          target: ownerWalletAdrress,
-          winstonQty: await arweave.ar.arToWinston(ar),
-        },
-        disableBundling: true
-      },
+      // { 
+      //   transfer: {
+      //     target: ownerWalletAdrress,
+      //     winstonQty: await arweave.ar.arToWinston(ar),
+      //   },
+      //   disableBundling: true
+      // },
     );
     console.log('faucet swap: ', tx);
     result = 'Succeed. Please wait for block to be mined.';

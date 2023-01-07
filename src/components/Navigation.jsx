@@ -17,7 +17,7 @@ export const Navigation = (props) => {
     <div>
       <Navbar appearance='subtle'>
         <Navbar.Brand href="#">
-          ThetAR Exchange
+          ThetAR DEX(TESTNET)
         </Navbar.Brand>
         <Nav>
           <Nav.Menu title="Menu">

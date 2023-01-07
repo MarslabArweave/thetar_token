@@ -62,23 +62,23 @@ export const Faucet = (props) => {
   }
 
   const makeSwap = async () => {
-    const arStr = mul(amount, price).toString();
-    if (arLessThan(balance, arStr)) {
-      return {status: false, result: 'Insuffient $AR in your wallet!'};
-    }
-    if (amount > allowance) {
-      return {status: false, result: 'Claim token exceeds max!'};
-    }
-    return await swap(arStr);
+    // const arStr = mul(amount, price).toString();
+    // if (arLessThan(balance, arStr)) {
+    //   return {status: false, result: 'Insuffient $AR in your wallet!'};
+    // }
+    // if (amount > allowance) {
+    //   return {status: false, result: 'Claim token exceeds max!'};
+    // }
+    return await swap(undefined);
   }
   
   return (
     <>
-      <div className='faucetTitle'>Faucet Information(stage 1):</div>
-      <div style={{'margin-top': '1rem'}}>
+      <div className='faucetTitle'>Faucet Information:</div>
+      {/* <div style={{'margin-top': '1rem'}}>
         <span className='faucetKey'>$TAR price:</span>
         <span className='faucetValue'> 1 $TAR = {price} $AR; 1 $AR = {div(1, price).toFixed(tarDecimals)} $TAR</span>
-      </div>
+      </div> */}
       <div style={{'margin-top': '1rem'}}>
         <span className='faucetKey'>$TAR in pool:</span>
         <span className='faucetValue'> {allowance} $TAR</span>
@@ -87,12 +87,12 @@ export const Faucet = (props) => {
         <span className='faucetKey'>Total claimed:</span>
         <span className='faucetValue'> {poured} $TAR</span>
       </div>
-      <div style={{'margin-top': '1rem'}}>
+      {/* <div style={{'margin-top': '1rem'}}>
         <span className='faucetKey'>$AR balance:</span>
         <span className='faucetValue'> {balance} $AR</span>
-      </div>
+      </div> */}
       
-      <TextInput 
+      {/* <TextInput 
         title='Claim $TAR:'
         tip={
           <>❕
@@ -104,9 +104,9 @@ export const Faucet = (props) => {
         }
         onChange={setClaimAmount}
         placeholder='e.g. 123.45'
-      />
+      /> */}
       <SubmitButton 
-        buttonText='Claim'
+        buttonText='Claim $TAR'
         buttonSize='Medium'
         submitTask={makeSwap}
       />

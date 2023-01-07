@@ -23,6 +23,8 @@ const App = () => {
     await connectContract();
     await sleep(3000);
     setIsContractConnected(true);
+    alert('*Note*: It is currently a beta version, and any tokens in the exchange are test tokens and have no value. \
+When the mainnet is launched, all listed tokens will be cleared.');
   }, []);
 
   if (!isContractConnected) {

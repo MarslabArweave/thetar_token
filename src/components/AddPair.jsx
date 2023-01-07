@@ -33,7 +33,7 @@ export const AddPair = (props) => {
     <>
       <div className='instruction'>
         ⚠️ ThetAR exchange adheres to the concept of community autonomy - Everyone can add trading pairs. 
-        At the same time, in order to avoid flooding attacks, there is a fee for adding pairs(10 $AR). Your $AR balance 
+        At the same time, in order to avoid flooding attacks, there is a fee for adding pairs(0 $AR when it is on testnet). Your $AR balance 
         is: {balance}.
       </div>
       <TextInput 
