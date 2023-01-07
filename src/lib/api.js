@@ -4,7 +4,7 @@ import {
 } from 'warp-contracts';
 import { selectWeightedPstHolder } from 'smartweave';
 import { mul, pow } from './math';
-/* global BigInt */
+import { intelliContract } from './intelliContract';
 
 LoggerFactory.INST.logLevel('error');
 
@@ -31,34 +31,22 @@ let faucetContract = undefined;
 let tarContract = undefined;
 
 export async function connectWallet(walletJwk) {
-  thetARContract.connect(walletJwk);
-  faucetContract.connect(walletJwk);
-  tarContract.connect(walletJwk);
+  thetARContract.connectWallet(walletJwk);
+  faucetContract.connectWallet(walletJwk);
+  tarContract.connectWallet(walletJwk);
   isConnectWallet = true;
   walletAddress = await arweave.wallets.jwkToAddress(walletJwk);
 }
 
 export async function connectContract() {
-  thetARContract = warp.contract(thetARContractAddress);
-  thetARContract.setEvaluationOptions({
-    internalWrites: true,
-    allowUnsafeClient: true,
-    // updateCacheForEachInteraction: true,
-  });
+  thetARContract = new intelliContract(warp);
+  thetARContract.connectContract(thetARContractAddress);
 
-  faucetContract = warp.contract(faucetContractAddress);
-  faucetContract.setEvaluationOptions({
-    internalWrites: true,
-    allowUnsafeClient: true,
-    // updateCacheForEachInteraction: true,
-  });
+  faucetContract = new intelliContract(warp);
+  faucetContract.connectContract(faucetContractAddress);
 
-  tarContract = warp.contract(tarAddress);
-  tarContract.setEvaluationOptions({
-    internalWrites: true,
-    allowUnsafeClient: true,
-    // updateCacheForEachInteraction: true,
-  });
+  tarContract = new intelliContract(warp);
+  tarContract.connectContract(tarAddress);
 
   return {status: true, result: 'Connect contract success!'};
 }
