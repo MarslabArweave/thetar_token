@@ -73,9 +73,15 @@ export async function addPair(tokenAddress, description) {
   if (!thetARContract) {
     return {status: false, result: 'Please connect contract first!'};
   }
-
-  if (!isWellFormattedAddress(tokenAddress, description)) {
-    return {status: false, result: 'Pst address not valid!'};
+  if (description.length > 128) {
+    return {status: false, result: 'Description length should less than 128!'};
+  }
+  if (!isWellFormattedAddress(tokenAddress)) {
+    return {status: false, result: 'Token address not valid!'};
+  }
+  const arBalanceRet = await getBalance('ar');
+  if (arBalanceRet.status && arLessThan(arBalanceRet.result, '10')) {
+    return {status: false, result: 'You should have at least 10$AR in wallet to pay for fee!'};
   }
 
   const txRet = await arweave.transactions.getStatus(tokenAddress);
@@ -104,7 +110,7 @@ export async function addPair(tokenAddress, description) {
         disableBundling: true
       }
     );
-    result = 'Add pair succeed!'
+    result = 'Add pair succeed! Please wait for block to be mined!';
   } catch (error) {
     status = false;
     result = error.message;
