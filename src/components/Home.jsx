@@ -137,7 +137,7 @@ export const Home = (props) => {
   return (
     <>
       <SearchFrame
-        prompt={`Enter '$ticker' OR '#pairId' OR 'pstAddress'`}
+        prompt={`Enter '$ticker' OR '#pairId' OR 'tokenAddress'`}
         onSearch={trigger}
       />
       <PageLoading 
