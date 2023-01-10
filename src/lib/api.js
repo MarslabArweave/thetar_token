@@ -85,9 +85,13 @@ export async function addPair(tokenAddress, description) {
   }
 
   const txRet = await arweave.transactions.getStatus(tokenAddress);
-  if (txRet.status !== 200 || txRet.confirmed.number_of_confirmations < 10) {
+  if (txRet.status !== 200) {
     return {status: false, result: 'Cannot find token address on Arweave Network, \
         please check token address or wait for the block to be mined!'};
+  }
+  const confirmations = txRet.confirmed.number_of_confirmations;
+  if (confirmations < 10) {
+    return {status: false, result: `Please wait for network confirmation: ${confirmations} / 10`};
   }
 
   let result = "";
@@ -422,7 +426,7 @@ export const isWellFormattedAddress = (input) => {
 }
 
 export const calculatePriceWithDecimals = (price, tradePrecision) => {
-  return mul(price, pow(10, tradePrecision-tarDecimals));
+  return mul(price, pow(10, tradePrecision-tarDecimals)).toFixed(tarDecimals);
 }
 
 // function used by faucet contract
