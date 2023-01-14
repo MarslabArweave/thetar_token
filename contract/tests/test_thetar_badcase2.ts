@@ -51,7 +51,7 @@ const deploy = async () => {
   })).contractTxId;
 
   // deploy thetAR contract
-  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');
+  const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/thetAR/contract.js'), 'utf8');
   const initFromFile = JSON.parse(
     fs.readFileSync(path.join(__dirname, '../dist/thetAR/initial-state.json'), 'utf8')
   );
@@ -71,9 +71,7 @@ const deploy = async () => {
   const contract = warp.contract(contractTxId);
   contract.setEvaluationOptions({
     internalWrites: true,
-    allowUnsafeClient: true,
-    allowBigInt: true,
-    updateCacheForEachInteraction: true,
+    allowUnsafeClient: true
   }).connect(walletJwk);
 
   // deploy test pst
@@ -138,9 +136,7 @@ const createOrder = async (direction, quantity, price) => {
   let contract = warp.contract(contractId);
   contract.setEvaluationOptions({
     internalWrites: true,
-      allowUnsafeClient: true,
-      allowBigInt: true,
-      updateCacheForEachInteraction: true,
+    allowUnsafeClient: true,
   }).connect(walletJwk);
 
   const testTokenId = 
@@ -164,72 +160,25 @@ const createOrder = async (direction, quantity, price) => {
   });
   mineBlock(arweave);
 
-  const txId = (await contract.writeInteraction({
+  //async function calling (without await)
+  contract.writeInteraction({
     function: 'createOrder',
     params: {
       pairId: 0,
       direction: direction,
       price: price
     }
-  })).originalTxId;
-  mineBlock(arweave);
-
-  console.log('AFTER: ', JSON.stringify(await contract.readState()));
-}
-
-const cancelOrder = async (orderIndex) => {
-  console.log('cancel order...');
-
-  LoggerFactory.INST.logLevel('error');
-
-  const warp = WarpFactory.forLocal(1984);
-  const arweave = warp.arweave;
-
-  const walletJwk = JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'key-file-for-test.json'), 'utf8')
-  );
-  const walletAddress = await arweave.wallets.jwkToAddress(walletJwk);
-  
-  const contractId = 
-    fs.readFileSync(path.join(__dirname, 'thetAR-txid-for-test.json'), 'utf8');
-  let contract = warp.contract(contractId);
-  contract.setEvaluationOptions({
-    internalWrites: true,
-      allowUnsafeClient: true,
-      allowBigInt: true,
-      updateCacheForEachInteraction: true,
-  }).connect(walletJwk);
-
-  const testTokenId = 
-    fs.readFileSync(path.join(__dirname, 'test-token-txid-for-test.json'), 'utf8');
-  let testTokenContract = warp.contract(testTokenId);
-  testTokenContract.connect(walletJwk);
-
-  const thetarTokenId = 
-    fs.readFileSync(path.join(__dirname, 'thetAR-token-txid-for-test.json'), 'utf8');
-  let thetarTokenContract = warp.contract(thetarTokenId);
-  thetarTokenContract.connect(walletJwk);
-
-  console.log('BEFORE: ', JSON.stringify(await contract.readState()));
-
-  const orderId = (await contract.readState()).cachedValue.state['orderInfos']['0']['orders'][orderIndex]['orderId'];
-
-  const txId = await contract.writeInteraction({
-    function: 'cancelOrder',
-    params: {
-      pairId: 0,
-      orderId: orderId
-    }
   });
   mineBlock(arweave);
 
-  console.log('AFTER: ', JSON.stringify(await contract.readState()));
+  // Simulate the scenario where the user try to get order book
+  // without finishing the creation of the order
+  console.log('Get order book: ', JSON.stringify(await contract.readState()));
+  console.log('Get order book: ', JSON.stringify(await contract.readState()));
+  console.log('Get order book: ', JSON.stringify(await contract.readState()));
 }
 
 (async () => {
   await deploy();
   await createOrder('buy', 1, 1);
-  await createOrder('buy', 2, 2);
-  await cancelOrder(0);
-  await cancelOrder(0);
 })();
