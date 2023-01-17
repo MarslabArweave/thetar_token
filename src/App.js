@@ -3,7 +3,6 @@ import { Routes, Route } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { 
   connectContract, 
-  connectWallet,
 } from './lib/api';
 import 'rsuite/dist/rsuite.css';
 import './App.css';
@@ -43,7 +42,7 @@ const App = () => {
             <Route path="/faucet" element={<FaucetFrame walletConnect={isWalletConnected}/>} />
             <Route path="/about" element={<AboutFrame />} />
             <Route path="/my" element={<MyFrame walletConnect={isWalletConnected}/>} />
-            <Route path="/pair/:pairId" element={<PairDetailFrame walletConnect={isWalletConnected}/>} />
+            <Route path="/pair/:tokenAddress" element={<PairDetailFrame walletConnect={isWalletConnected}/>} />
           </Routes>
         </main>
       </div>

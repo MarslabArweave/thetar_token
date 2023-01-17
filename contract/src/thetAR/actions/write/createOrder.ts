@@ -12,8 +12,8 @@ export const createOrder = async (
   action: type.Action,
 ): Promise<type.ContractResult> => {
   const param: type.createOrderParam = <type.createOrderParam>action.input.params;
-  if (!(param.pairId <= state.maxPairId && param.pairId >= 0)) {
-    throw new ContractError('PairId not valid!');
+  if (!state.pairInfos.hasOwnProperty(param.tokenAddress)) {
+    throw new ContractError('Pair does not exist!');
   }
   if (param.price !== undefined && param.price !== null) {
     if (typeof(param.price) !== 'number') {
@@ -34,26 +34,26 @@ export const createOrder = async (
 
   const { newOrderbook, newUserOrders, transactions, currentPrice } = await matchOrder(
     newOrder,
-    state.orderInfos[param.pairId].orders,
+    state.orderInfos[param.tokenAddress].orders,
     state.userOrders,
-    param.pairId,
+    param.tokenAddress,
     action.caller
   );
 
   // update orderInfos and userOrders
-  state.orderInfos[param.pairId].orders = newOrderbook;
+  state.orderInfos[param.tokenAddress].orders = newOrderbook;
   state.userOrders = newUserOrders;
 
   // update pair's current price
   if (!isNaN(currentPrice) && isFinite(currentPrice)) {
-    state.orderInfos[param.pairId].currentPrice = currentPrice;
+    state.orderInfos[param.tokenAddress].currentPrice = currentPrice;
   }
   
   // make transactions
   for await (const tx of transactions) {
-    const matchedPair = state.pairInfos.find(i=>i.pairId===param.pairId);
+    const matchedPair = state.pairInfos[param.tokenAddress];
     const targetTokenAdrress = tx.tokenType === 'dominent' ? 
-        state.thetarTokenAddress : matchedPair.tokenAddress;
+        state.thetarTokenAddress : param.tokenAddress;
     await SmartWeave.contracts.write(
       targetTokenAdrress, 
       { function: 'transfer', to: tx.to, amount: tx.quantity},
@@ -70,8 +70,8 @@ const checkOrderQuantity = async (
   const param: type.createOrderParam = <type.createOrderParam>action.input.params;
 
   // fetch allowance
-  let pairInfo = state.pairInfos.find(pair=>pair.pairId===param.pairId);
-  const tokenAddress: string = param.direction === 'buy' ? state.thetarTokenAddress : pairInfo.tokenAddress;
+  let pairInfo = state.pairInfos[param.tokenAddress];
+  const tokenAddress: string = param.direction === 'buy' ? state.thetarTokenAddress : param.tokenAddress;
   const tokenState = await SmartWeave.contracts.readContractState(tokenAddress);
   let orderQuantity = tokenState.allowances[action.caller][SmartWeave.contract.id];
 
@@ -95,16 +95,16 @@ const matchOrder = async (
   orderbook: type.orderInterface[],
   userOrders: {
     [walletAddress: string]: {
-      [pairId: number]: type.orderInterface[];
+      [tokenAddress: string]: type.orderInterface[];
     }
   },
-  newOrderPairId,
+  tokenAddress,
   caller
 ): Promise<{
   newOrderbook: type.orderInterface[], 
   newUserOrders: {
     [walletAddress: string]: {
-      [pairId: number]: type.orderInterface[];
+      [tokenAddress: string]: type.orderInterface[];
     }
   },
   transactions: Transaction[],
@@ -177,11 +177,11 @@ const matchOrder = async (
     }
 
     // 2. update Order in userOrders
-    let userOrderInfos = userOrders[order.creator][newOrderPairId];
+    let userOrderInfos = userOrders[order.creator][tokenAddress];
     let matchedOrderIdx = userOrderInfos.findIndex(value=>value.orderId===order.orderId);
     userOrderInfos[matchedOrderIdx].quantity -= targetAmout;
     if (userOrderInfos[matchedOrderIdx].quantity === 0) {
-      userOrders[order.creator][newOrderPairId] = 
+      userOrders[order.creator][tokenAddress] = 
           userOrderInfos.filter(v=>v.orderId !== order.orderId);
     }
 
@@ -209,10 +209,10 @@ const matchOrder = async (
     if (userOrders[caller] === undefined) {
       userOrders[caller] = {};
     }
-    if (userOrders[caller][newOrderPairId] === undefined) {
-      userOrders[caller][newOrderPairId] = [];
+    if (userOrders[caller][tokenAddress] === undefined) {
+      userOrders[caller][tokenAddress] = [];
     }
-    userOrders[caller][newOrderPairId].push({...newOrder});
+    userOrders[caller][tokenAddress].push({...newOrder});
   }
 
 

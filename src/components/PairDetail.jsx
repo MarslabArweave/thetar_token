@@ -36,7 +36,7 @@ export const PairDetail = (props) => {
     }
     setArBalance(arBalanceRet.result);
   
-    const pstBalanceRet = await getBalance(pair.tokenAddress);
+    const pstBalanceRet = await getBalance(params.tokenAddress);
     if (!pstBalanceRet.status) {
       return;
     }
@@ -50,14 +50,14 @@ export const PairDetail = (props) => {
   }
 
   async function fetchInfos() {
-    const pairId = parseInt(params.pairId);
-    const pairInfoRet = await pairInfo(pairId);
+    const addr = params.tokenAddress;
+    const pairInfoRet = await pairInfo(addr);
     if (!pairInfoRet.status) {
       return pairInfoRet;
     }
     setPair(pairInfoRet.result);
 
-    const orderInfoRet = await orderInfo(pairId);
+    const orderInfoRet = await orderInfo(addr);
     if (!orderInfoRet.status) {
       return orderInfoRet;
     }
@@ -74,14 +74,13 @@ export const PairDetail = (props) => {
         <>
           <div className='PairDetailTitle'>
             Pair:&nbsp;&nbsp;
-            #{pair.pairId}&nbsp;&nbsp;
             ${pair.symbol} / ${dominentSymbol}
           </div>
 
           <div className='PairDetailInfo'>
             Token Address:&nbsp;&nbsp;
             <a href={`https://www.arweave.net/_tfx0j4nhCwRDYmgU6XryFDceF52ncPKVivot5ijwdQ/#/${pair.tokenAddress}`}> 
-              {pair.tokenAddress} 
+              {params.tokenAddress} 
             </a>
           </div>
           <div className='PairDetailInfo'>Description: {pair.description}</div>
@@ -102,14 +101,14 @@ export const PairDetail = (props) => {
             dominentBalance={dominentBalance}
             arBalance={arBalance}
             orders={order}
-            pairId={pair.pairId}
+            tokenAddress={params.tokenAddress}
             onUpdateBalance={fetchBalance}
           />
           <hr width="90%" SIZE='1' color='#6f7a88'/>
 
           <OrderList 
             orders={order}
-            pairId={pair.pairId}
+            tokenAddress={params.tokenAddress}
             decimals={pair.decimals}
           />
         </>

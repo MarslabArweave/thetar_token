@@ -44,13 +44,11 @@ const PairItem = (props) => {
         <div className="layout">
           <div>
             <div className="itemRow"> 
-              <Link to={`/pair/${props.pairInfo.pairId}`} className="pairId">
-                # {props.pairInfo.pairId} &nbsp;&nbsp; 
+              <Link to={`/pair/${props.pairInfo.tokenAddress}`} className="pairId">
+                {props.pairInfo.pstTicker}  ({props.pairInfo.tokenAddress.substring(0,8)})
+                &nbsp;&nbsp; 
                 {props.pairInfo.trusted ? verifiedIcon : ''}
               </Link>
-            </div>
-            <div className="itemRow"> 
-              Pair: {props.pairInfo.pstTicker} / {props.pairInfo.dmntTicker} 
             </div>
             <div className="itemRow"> 
               Price: {renderPrice()} 

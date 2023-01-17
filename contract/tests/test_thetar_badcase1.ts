@@ -163,7 +163,7 @@ const createOrder = async (direction, quantity, price) => {
   const txId = (await contract.writeInteraction({
     function: 'createOrder',
     params: {
-      pairId: 0,
+      tokenAddress: testTokenId,
       direction: direction,
       price: price
     }
@@ -206,12 +206,12 @@ const cancelOrder = async (orderIndex) => {
 
   console.log('BEFORE: ', JSON.stringify(await contract.readState()));
 
-  const orderId = (await contract.readState()).cachedValue.state['orderInfos']['0']['orders'][orderIndex]['orderId'];
+  const orderId = (await contract.readState()).cachedValue.state['orderInfos'][testTokenId]['orders'][orderIndex]['orderId'];
 
   const txId = await contract.writeInteraction({
     function: 'cancelOrder',
     params: {
-      pairId: 0,
+      tokenAddress: testTokenId,
       orderId: orderId
     }
   });

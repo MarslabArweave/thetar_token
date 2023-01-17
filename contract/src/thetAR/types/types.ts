@@ -5,22 +5,18 @@ export interface addPairParam {
 }
 
 export interface createOrderParam {
-  pairId: number;
+  tokenAddress: string;
   direction: 'buy' | 'sell';
   price?: number;
 }
 
 export interface cancelOrderParam {
-  pairId: number;
+  tokenAddress: string;
   orderId: string;
 }
 
 export interface pairInfoParam {
-  pairId: number;
-}
-
-export interface tokenInfoParam {
-  pstAddress: string;
+  tokenAddress: string;
 }
 
 export interface addTokenSrcTxParam {
@@ -38,12 +34,14 @@ export interface currentPriceResult {
 }
 
 export interface userOrderResult {
-  [pairId: number]: orderInterface[];
+  [tokenAddress: string]: orderInterface[];
 }
 
 export type pairInfoResult = pairInfoInterface;
 
-export type tokenInfoResult = tokenInfoInterface;
+export interface pairInfoResults {
+  [tokenAddress: string]: pairInfoInterface;
+}
 
 export interface orderInfoResult {
   currentPrice: number;
@@ -51,7 +49,7 @@ export interface orderInfoResult {
 }
 
 export interface orderInfosResult {
-  [pairId: number]: { 
+  [tokenAddress: string]: { 
     currentPrice: number;
     orders: orderInterface[];
   };
@@ -82,8 +80,6 @@ export interface orderInterface {
 }
 
 export interface pairInfoInterface {
-  pairId: number;
-  tokenAddress: string;
   logo: string;
   description: string;
   name: string;
@@ -95,16 +91,15 @@ export interface State {
   owner: string;
   tokenSrcTxs: string[];
   thetarTokenAddress: string;
-  maxPairId: number;
 
-  pairInfos: pairInfoInterface[];
+  pairInfos: {[tokenAddress: string]: pairInfoInterface};
   userOrders: {
     [walletAddress: string]: {
-      [pairId: number]: orderInterface[];
+      [tokenAddress: string]: orderInterface[];
     }
-  }
+  };
   orderInfos: {
-    [pairId: number]: { 
+    [tokenAddress: string]: { 
       currentPrice: number;
       orders: orderInterface[];
     };
@@ -118,7 +113,6 @@ export type Function =
     'pairInfo' |
     'tokenInfo' |
     'pairInfos' |
-    'tokenInfos' |
     'orderInfo' |
     'orderInfos' |
     'addTokenSrcTx' |
@@ -129,16 +123,13 @@ export type Params =
     addPairParam |
     cancelOrderParam |
     pairInfoParam |
-    tokenInfoParam |
     orderInfoParam |
     addTokenSrcTxParam |
     userOrderParam;
 
 export type Result = 
     pairInfoResult |
-    tokenInfoResult |
-    pairInfoResult[] |
-    tokenInfoResult[] |
+    pairInfoResults |
     orderInfoResult |
     orderInfosResult |
     userOrderResult;

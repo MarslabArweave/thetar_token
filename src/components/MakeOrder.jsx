@@ -147,7 +147,7 @@ export const MakeOrder = (props) => {
       return {status: false, result: 'You should have at least 0.02$AR in your wallet to pay for network fee!'};
     }
 
-    const ret = await createOrder(dirTypeText.value, targetAmout, price, parseInt(props.pairId));
+    const ret = await createOrder(dirTypeText.value, targetAmout, price, props.tokenAddress);
     await props.onUpdateBalance();
     return ret;
   }

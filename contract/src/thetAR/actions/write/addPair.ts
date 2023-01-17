@@ -20,7 +20,9 @@ export const addPair = async (
   if (!validDescription(description)) {
     throw new ContractError('Description you enter is not valid!');
   }
-
+  if (state.pairInfos.hasOwnProperty(param.tokenAddress)) {
+    throw new ContractError('Pair already exists!');
+  }
 
   if (action.caller !== state.owner) {
     const txQty = SmartWeave.transaction.quantity;
@@ -36,30 +38,24 @@ export const addPair = async (
       throw new ContractError('Token contract validation check failed!');
     }
   }
-  if (state.pairInfos.map(info=>info.tokenAddress).includes(tokenAddress)) {
-    throw new ContractError('Pair already exists!');
-  }
 
   const tokenState = await SmartWeave.contracts.readContractState(tokenAddress);
 
-  state.maxPairId ++;
-  state.pairInfos.push({
-    pairId: state.maxPairId,
-    tokenAddress: tokenAddress,
+  state.pairInfos[tokenAddress] = {
     logo: logoTx,
     description: description,
     name: tokenState.name,
     symbol: tokenState.symbol,
     decimals: tokenState.decimals
-  });
-  state.orderInfos[state.maxPairId] = {
+  };
+  state.orderInfos[tokenAddress] = {
     currentPrice: undefined,
     orders: [],
   };
   for (const user in state.userOrders) {
     if (Object.prototype.hasOwnProperty.call(state.userOrders, user)) {
       let userOrder = state.userOrders[user];
-      userOrder[state.maxPairId] = [];
+      userOrder[tokenAddress] = [];
     }
   }
 

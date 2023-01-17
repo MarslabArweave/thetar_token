@@ -3,7 +3,7 @@
   "tokenSrcTxs": [],
   "thetarTokenAddress": "replace_with_thetar_pst_address",
   "maxPairId": -1,
-  "pairInfos": [],
+  "pairInfos": {},
   "userOrders": {},
   "orderInfos": {}
 }

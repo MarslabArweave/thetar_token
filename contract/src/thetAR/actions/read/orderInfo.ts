@@ -7,14 +7,14 @@ export const orderInfo = async (
   action: type.Action,
 ): Promise<type.ContractResult> => {
   const param: type.orderInfoParam = <type.orderInfoParam>action.input.params;
-  let pairId: number = param.pairId;
+  let tokenAddress: string = param.tokenAddress;
   let result: type.Result;
 
-  if (!Number.isInteger(pairId) || pairId < 0 || pairId > state.maxPairId) {
-    throw new ContractError(`Invalid pairId!`);
+  if (!state.pairInfos.hasOwnProperty(tokenAddress)) {
+    throw new ContractError('Pair does not exist!');
   }
 
-  result = state.orderInfos[pairId];
+  result = state.orderInfos[tokenAddress];
 
   return { result };
 };

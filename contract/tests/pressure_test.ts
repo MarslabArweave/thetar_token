@@ -148,7 +148,7 @@ LoggerFactory.INST.logLevel('error');
       await contract.writeInteraction({
         function: 'createOrder',
         params: {
-          pairId: i1,
+          tokenAddress: tokenAddr,
           direction: 'buy',
           price: 1
         }
@@ -171,7 +171,7 @@ LoggerFactory.INST.logLevel('error');
       await contract.writeInteraction({
         function: 'createOrder',
         params: {
-          pairId: i1,
+          tokenAddress: tokenAddr,
           direction: 'sell',
           price: 1
         }

@@ -164,7 +164,7 @@ const createOrder = async (direction, quantity, price) => {
   contract.writeInteraction({
     function: 'createOrder',
     params: {
-      pairId: 0,
+      tokenAddress: testTokenId,
       direction: direction,
       price: price
     }

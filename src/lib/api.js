@@ -9,19 +9,19 @@ import { intelliContract } from './intelliContract';
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = 'PmwpiDuBdeA0Q9-BjgUrSWUSxXOtHd2K4uvIuhKmy48';
-const faucetContractAddress = '8DrnOTZ5glVjkzG39xymrd5PviwxhQOlSW5AoNVb0Ts';
-const ownerWalletAdrress = 'g-HsAODsIOoTG4MgvmeOTmqyA_RKMupujUuok-nrmkg';
-export const tarAddress = "R6hGRrILpe2aGJBwxlze7WBNnVwwRRqwXDq_8okKJUA";
+const thetARContractAddress = '7A7DXfRfHHDhBndCWBacoAL0GYzvPPYlWSKPV5G5QL0';
+const faucetContractAddress = 'Yq3QNjDjDpK1E0_WHMmQXHcfAUyCJh8_BOcR6zBmsWM';
+const ownerWalletAdrress = 'AZZEwtHk518IIGKrZPAOPZJ8FW9z4iMQjFi5ACvQtco';
+export const tarAddress = "q7HKzj0QXQOKdny8Q1bRA3obRUEDU-5BV78yBJqUUms";
 export const tarSymbol = "TAR";
 export const tarDecimals = 5;
 
-// const warp = WarpFactory.forLocal(1984);
+const warp = WarpFactory.forLocal(1984);
 // const warp = WarpFactory.forTestnet();
-const warp = WarpFactory.forMainnet({
-  dbLocation: './cache/warp'+(new Date().getTime()).toString(), 
-  inMemory: false
-});
+// const warp = WarpFactory.forMainnet({
+//   dbLocation: './cache/warp'+(new Date().getTime()).toString(), 
+//   inMemory: false
+// });
 const arweave = warp.arweave;
 let walletAddress = undefined;
 export let isConnectWallet = false;
@@ -154,7 +154,7 @@ export async function getBalance(tokenAddress) {
   return {status: status, result: result};
 }
 
-export async function createOrder(direction, quantity, price, pairId) {
+export async function createOrder(direction, quantity, price, tokenAddress) {
   if (!isConnectWallet) {
     return {status: false, result: 'Please connect your wallet first!'};
   }
@@ -170,25 +170,18 @@ export async function createOrder(direction, quantity, price, pairId) {
   if (price !== undefined && (!Number.isInteger(price) || price <= 0)) {
     return {status: false, result: 'Price must either be positive integer or undefined!'};
   }
-  if (!Number.isInteger(pairId) || pairId < 0) {
-    return {status: false, result: 'PairId must be non-negative integer!'};
+  if (!isWellFormattedAddress(tokenAddress)) {
+    return {status: false, result: 'Token address format error!'};
   }
 
   let result = "";
   let status = true;
   try {
-    const pairInfo = (await thetARContract.viewState({
-      function: 'pairInfo',
-      params: {
-        pairId: pairId
-      }
-    })).result;
-    
     let token;
     if (direction === 'buy') {
       token = tarContract;
     } else {
-      token = warp.contract(pairInfo['tokenAddress']);
+      token = warp.contract(tokenAddress);
       token.connect('use_wallet');
     }
 
@@ -201,7 +194,7 @@ export async function createOrder(direction, quantity, price, pairId) {
     await thetARContract.writeInteraction({
       function: 'createOrder',
       params: {
-        pairId: pairId,
+        tokenAddress: tokenAddress,
         direction: direction,
         price: price
       }
@@ -235,7 +228,7 @@ export async function txStatus(tx) {
   return (await arweave.transactions.getStatus(tx)).status;
 }
 
-export async function pairInfo(pairId) {
+export async function pairInfo(tokenAddress) {
   if (!thetARContract) {
     return {status: false, result: 'Please connect contract first!'};
   }
@@ -246,7 +239,7 @@ export async function pairInfo(pairId) {
     result = (await thetARContract.viewState({
       function: "pairInfo",
       params: {
-        pairId: pairId
+        tokenAddress: tokenAddress
       }
     })).result;
   } catch (error) {
@@ -257,15 +250,15 @@ export async function pairInfo(pairId) {
   return {status: status, result: result};
 }
 
-export async function cancelOrder(pairId, orderId) {
+export async function cancelOrder(tokenAddress, orderId) {
   if (!isConnectWallet) {
     return {status: false, result: 'Please connect your wallet first!'};
   }
   if (!thetARContract) {
     return {status: false, result: 'Please connect contract first!'};
   }
-  if (!Number.isInteger(pairId) || pairId < 0) {
-    return {status: false, result: 'PairId must be non-negative integer!'};
+  if (!isWellFormattedAddress(tokenAddress)) {
+    return {status: false, result: 'Token address format error!'};
   }
   if (!isWellFormattedAddress(orderId)) {
     return {status: false, result: 'orderId not valid!'};
@@ -277,7 +270,7 @@ export async function cancelOrder(pairId, orderId) {
     const txId = await thetARContract.writeInteraction({
       function: 'cancelOrder',
       params: {
-        pairId: pairId,
+        tokenAddress: tokenAddress,
         orderId: orderId
       }
     });
@@ -328,12 +321,12 @@ export async function orderInfos() {
   return {status: status, result: result};
 }
 
-export async function orderInfo(pairId) {
+export async function orderInfo(tokenAddress) {
   if (!thetARContract) {
     return {status: false, result: 'Please connect contract first!'};
   }
-  if (!Number.isInteger(pairId) || pairId < 0) {
-    return {status: false, result: 'PairId must be non-negative integer!'};
+  if (!isWellFormattedAddress(tokenAddress)) {
+    return {status: false, result: 'Token address format error!'};
   }
 
   let result = "";
@@ -342,7 +335,7 @@ export async function orderInfo(pairId) {
     result = (await thetARContract.viewState({
       function: "orderInfo",
       params: {
-        pairId: pairId
+        tokenAddress: tokenAddress
       }
     })).result;
     console.log('orderInfo', result);

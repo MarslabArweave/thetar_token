@@ -26,12 +26,12 @@ export const MyOrders = (props) => {
         setUserOrders([]);
       } else {
         let items = [];
-        for (const pairId in ret.result) {
-          if (Object.hasOwnProperty.call(ret.result, pairId)) {
-            const orders = ret.result[pairId];
+        for (const tokenAddress in ret.result) {
+          if (Object.hasOwnProperty.call(ret.result, tokenAddress)) {
+            const orders = ret.result[tokenAddress];
             items = items.concat(orders.map(e=>{
               return {
-                pairId: pairId,
+                tokenAddress: tokenAddress,
                 orderId: e.orderId,
                 direction: e.direction,
                 price: e.price,
@@ -73,7 +73,7 @@ export const MyOrders = (props) => {
       {userOrders.map(e=><OrderItem 
         key={e.orderId}
         onUpdate={fetchUserOrders}
-        pairId={e.pairId}
+        tokenAddress={e.tokenAddress}
         orderId={e.orderId}
         direction={e.direction}
         price={e.price}
@@ -94,8 +94,7 @@ const OrderItem = (props) => {
     <Message type={type} header={message} closable showIcon />
 
   React.useEffect(async () => {
-    const pairId = parseInt(props.pairId);
-    const pairInfoRet = await pairInfo(pairId);
+    const pairInfoRet = await pairInfo(props.tokenAddress);
     console.log('OrderItem: ', props, pairInfoRet);
     if (!pairInfoRet.status) {
       return;
@@ -113,10 +112,10 @@ const OrderItem = (props) => {
   }
 
   async function onCancel() {
-    console.log('on cancel: ', props.pairId, props.orderId);
+    console.log('on cancel: ', props.tokenAddress, props.orderId);
     props.onCancelling(true);
     setIsCancelling(true);
-    const ret = await cancelOrder(parseInt(props.pairId), props.orderId);
+    const ret = await cancelOrder(parseInt(props.tokenAddress), props.orderId);
     toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result));
     if (ret.status) {
       props.onUpdate();
@@ -128,7 +127,7 @@ const OrderItem = (props) => {
       <div className="layout">
         <div>
           <div className="itemRow"> 
-          <span className='blue'>Pair:</span> #{props.pairId} (${tokenSymbol} / ${tarSymbol})
+          <span className='blue'>Pair:</span> (${tokenSymbol} / ${tarSymbol})
           </div>
           <div className="itemRow"> 
             <span className='blue'>Direction:</span> {renderDirection()}
