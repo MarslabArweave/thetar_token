@@ -115,7 +115,7 @@ const OrderItem = (props) => {
     console.log('on cancel: ', props.tokenAddress, props.orderId);
     props.onCancelling(true);
     setIsCancelling(true);
-    const ret = await cancelOrder(parseInt(props.tokenAddress), props.orderId);
+    const ret = await cancelOrder(props.tokenAddress, props.orderId);
     toaster.push(toast(ret.status === true ? 'success' : 'error', ret.result));
     if (ret.status) {
       props.onUpdate();
