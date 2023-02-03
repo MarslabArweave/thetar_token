@@ -5,14 +5,15 @@ import {
 import { selectWeightedPstHolder } from 'smartweave';
 import { mul, pow } from './math';
 import { intelliContract } from './intelliContract';
+import { stat } from 'fs';
 
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = '7A7DXfRfHHDhBndCWBacoAL0GYzvPPYlWSKPV5G5QL0';
-const faucetContractAddress = 'Yq3QNjDjDpK1E0_WHMmQXHcfAUyCJh8_BOcR6zBmsWM';
-const ownerWalletAdrress = 'AZZEwtHk518IIGKrZPAOPZJ8FW9z4iMQjFi5ACvQtco';
-export const tarAddress = "q7HKzj0QXQOKdny8Q1bRA3obRUEDU-5BV78yBJqUUms";
+const thetARContractAddress = 'rm4Hf6ZY4j2NitVJk9RigZ1JQTB3W5GMdLz6LdrYdYE';
+const faucetContractAddress = 'SMDLkXtVvE5y1ZP0e_fPR2EMKDGp-hqh9s8FS8VF_yo';
+const ownerWalletAdrress = '4a9db2YjUGi0K1WfzxjGofkiE94Eo9pAaGwdyXGlr88';
+export const tarAddress = "bTEz-5QpqiDKVKYtIB1226rKlcshZIQ9L5KnW91qVg8";
 export const tarSymbol = "TAR";
 export const tarDecimals = 5;
 
@@ -216,7 +217,6 @@ export async function createOrder(direction, quantity, price, tokenAddress) {
       target: selectWeightedPstHolder(balances),
       quantity: arweave.ar.arToWinston('0.01')
     }, 'use_wallet');
-    console.log(transaction);
     await arweave.transactions.sign(transaction, 'use_wallet');
     await arweave.transactions.post(transaction);
   } catch {}
@@ -347,6 +347,23 @@ export async function orderInfo(tokenAddress) {
   return {status: status, result: result};
 }
 
+export async function getPriceByBlockHeight(tokenAddress, blockHeight) {
+  let result = 0;
+  try {
+    const price = (await thetARContract.readState(blockHeight)).cachedValue.state.orderInfos[tokenAddress].currentPrice;
+    if (price) {
+      result = price;
+    }
+  } catch {}
+  
+  return result;
+}
+
+export async function getBlockHeight(relativeDays) {
+  const height = (await arweave.blocks.getCurrent()).height;
+  return parseInt(height - relativeDays * 24 * 60 / 2);
+}
+
 export async function userOrder(address) {
   if (!thetARContract) {
     return {status: false, result: 'Please connect contract first!'};
@@ -419,8 +436,33 @@ export const isWellFormattedAddress = (input) => {
 }
 
 export const calculatePriceWithDecimals = (price, tradePrecision) => {
-  return mul(price, pow(10, tradePrecision-tarDecimals)).toFixed(tarDecimals);
+  return Number(mul(price, pow(10, tradePrecision-tarDecimals)).toFixed(tarDecimals));
 }
+
+export const genRaise = (number, showPct) => {
+  const isPositive = number > 0;
+  const isNegative = number < 0;
+  return (
+    <span style={{ paddingLeft: 5, color: isNegative ? 'red' : 'green' }}>
+      <span>{isPositive ? '+' : null}</span>
+      <span>{number > 1e6 ? '>1000000' : number}{showPct ? '%' : ''}</span>
+    </span>
+  );
+}
+
+export const getContractTxInfo = async (contractAddress) => {
+  const tx = await arweave.transactions.get(contractAddress);
+  return {status: true, result: tx};
+};
+
+export const getContractData = async (contractAddress) => {
+  const data = await arweave.transactions.getData(contractAddress, {decode: true, string: true});
+  return {status: true, result: data};
+};
+
+export const blockHeight2DateTime = async (blockHeight) => {
+  // undefined
+};
 
 // function used by faucet contract
 

@@ -11,13 +11,14 @@ import TwitterIcon from '@rsuite/icons/legacy/Twitter';
 import GithubIcon from '@rsuite/icons/legacy/Github';
 import EmailIcon from '@rsuite/icons/Email';
 import MoneyIcon from '@rsuite/icons/legacy/Bank';
+import NavLogo from './NavLogo.png';
 
 export const Navigation = (props) => {
   return (<>
     <div>
       <Navbar appearance='subtle'>
         <Navbar.Brand href="#">
-          ThetAR Exchange
+          <img src={NavLogo} style={{position: 'relative', top: '-5px' , height: '2rem'}} />
         </Navbar.Brand>
         <Nav>
           <Nav.Menu title="Menu">
@@ -31,7 +32,7 @@ export const Navigation = (props) => {
               <Nav.Item icon={<MoneyIcon />}>Faucet</Nav.Item>
             </Link>
             <Link to="/my" className='menuText'>
-              <Nav.Item icon={<MyIcon />}>My Orders</Nav.Item>
+              <Nav.Item icon={<MyIcon />}>My</Nav.Item>
             </Link>
             <Link to="/about" className='menuText'>
               <Nav.Item icon={<AboutIcon />}>About</Nav.Item>

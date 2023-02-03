@@ -1,56 +1,66 @@
 import React from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { 
   pairInfo,
   orderInfo,
-  getBalance,
-  tarAddress,
   tarSymbol,
-  tarDecimals
+  calculatePriceWithDecimals,
+  getContractTxInfo,
+  getContractData
 } from '../lib/api';
-import { MakeOrder } from './MakeOrder';
-import { OrderList } from './OrderList';
+import { 
+  Container, 
+  Header, 
+  Content, 
+  Footer, 
+  Panel, 
+} from 'rsuite';
 import { PageLoading } from './PageLoading/PageLoading';
+import BackIcon from '@rsuite/icons/legacy/Left';
+import LinkIcon from '@rsuite/icons/legacy/ExternalLink';
+import { mul, pow } from '../lib/math';
+import { PriceChart } from './PriceChart';
+
+const contentStyle = {
+  padding: '1rem', 
+  backgroundColor: 'rgb(37, 49, 61)', 
+  margin: '1rem',
+  borderRadius: '15px'
+};
+
+const panelStyle = {
+  color: 'white', 
+  fontSize: '1.4em', 
+  fontWeight: 700
+};
 
 export const PairDetail = (props) => {
   const dominentSymbol = tarSymbol;
   const params = useParams();
 
-  const [arBalance, setArBalance] = React.useState('N/A');
-  const [pstBalance, setPstBalance] = React.useState('N/A');
-  const [dominentBalance, setDominentBalance] = React.useState('N/A');
-
+  const [tokenInfoList, setTokenInfoList] = React.useState([]);
   const [pair, setPair] = React.useState();
   const [order, setOrder] = React.useState();
 
   React.useEffect(async () => {
-    if (pair !== undefined && props.walletConnect) {
-      await fetchBalance();
+    if (pair && order) {
+      const contractData = JSON.parse(await (await getContractData(params.tokenAddress)).result);
+      const contractInfo = (await getContractTxInfo(params.tokenAddress)).result;
+      const totalSupply = mul(contractData.totalSupply, pow(10, -contractData.decimals));
+      setTokenInfoList([
+        {title: 'Token Address', content: <a href={`https://www.arweave.net/_tfx0j4nhCwRDYmgU6XryFDceF52ncPKVivot5ijwdQ/#/${params.tokenAddress}`}>{params.tokenAddress} {<LinkIcon />}</a>}, 
+        {title: 'Creator', content: contractInfo.owner_address},
+        {title: 'Decimals', content: pair.decimals},
+        {title: 'Mint Date', content: contractInfo.created_at.substring(0, 10)},
+        {title: 'Total Supply', content: totalSupply},
+        {title: 'Description', content: pair.description},
+      ]);
     }
-  }, [pair, props.walletConnect]);
-
-  async function fetchBalance() {
-    const arBalanceRet = await getBalance('ar');
-    if (!arBalanceRet.status) {
-      return;
-    }
-    setArBalance(arBalanceRet.result);
-  
-    const pstBalanceRet = await getBalance(params.tokenAddress);
-    if (!pstBalanceRet.status) {
-      return;
-    }
-    setPstBalance(pstBalanceRet.result);
-
-    const dominentBalanceRet = await getBalance(tarAddress);
-    if (!dominentBalanceRet.status) {
-      return;
-    }
-    setDominentBalance(dominentBalanceRet.result);
-  }
+  }, [pair, order]);
 
   async function fetchInfos() {
     const addr = params.tokenAddress;
+
     const pairInfoRet = await pairInfo(addr);
     if (!pairInfoRet.status) {
       return pairInfoRet;
@@ -65,54 +75,61 @@ export const PairDetail = (props) => {
     return {status: true, result: "Fetch infos sucessful!"}
   }
 
-  return (
-    <div>
-      <PageLoading 
-        submitTask={fetchInfos}
-      />
-      {pair && order &&
-        <>
-          <div className='PairDetailTitle'>
-            Pair:&nbsp;&nbsp;
-            ${pair.symbol} / ${dominentSymbol}
-          </div>
+  const renderTokenInfo = (title, content) => {
+    return(
+      <div style={{padding: '0.8rem'}}>
+        <p style={{color: 'white', fontSize: '1rem', fontWeight: 300}}>{title}</p>
+        <p style={{color: 'white', fontSize: '1.4rem', fontWeight: 500}}>{content}</p>
+      </div>
+    );
+  };
 
-          <div className='PairDetailInfo'>
-            Token Address:&nbsp;&nbsp;
-            <a href={`https://www.arweave.net/_tfx0j4nhCwRDYmgU6XryFDceF52ncPKVivot5ijwdQ/#/${pair.tokenAddress}`}> 
-              {params.tokenAddress} 
-            </a>
-          </div>
-          <div className='PairDetailInfo'>Description: {pair.description}</div>
-          <div className='PairDetailInfo'>$AR Balance: {arBalance}</div>
-          <div className='PairDetailInfo'>${pair.symbol} Balance: 
-            {(pstBalance*Math.pow(10, -pair.decimals)).toFixed(pair.decimals)}
-          </div>
-          <div className='PairDetailInfo'>${dominentSymbol} Balance: 
-            {(dominentBalance*Math.pow(10, -tarDecimals)).toFixed(tarDecimals)}
-          </div>
-
-          <hr width="90%" SIZE='1' color='#6f7a88'/>
-          <MakeOrder 
-            tokenSymbol={pair.symbol}
-            tokenBalance={pstBalance}
-            tokenDecimals={pair.decimals}
-            dominentTicker={dominentSymbol}
-            dominentBalance={dominentBalance}
-            arBalance={arBalance}
-            orders={order}
-            tokenAddress={params.tokenAddress}
-            onUpdateBalance={fetchBalance}
-          />
-          <hr width="90%" SIZE='1' color='#6f7a88'/>
-
-          <OrderList 
-            orders={order}
-            tokenAddress={params.tokenAddress}
-            decimals={pair.decimals}
-          />
-        </>
-      }
-    </div>
-  );
+  return (<>
+    <PageLoading 
+      submitTask={fetchInfos}
+    />
+    {pair && order &&
+      <Container>
+        <Header>
+          <span onClick={()=>{window.location.href="#"}} style={{cursor: 'pointer'}}>
+            {React.cloneElement(<BackIcon />, {
+              style: {
+                fontSize: '1.5rem',
+              }
+            })}
+          </span>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          ${pair.symbol} ({pair.name})
+        </Header>
+        <Container>
+          <Content style={contentStyle}>
+            <Panel
+              bordered 
+              defaultExpanded 
+              collapsible 
+              header={<p style={panelStyle}>Price History</p>}
+            >
+              <div style={{fontSize: '1.8rem', color: 'white'}}>
+                {order.currentPrice ? 
+                    calculatePriceWithDecimals(order.currentPrice, pair.decimals).toString()+' $'+tarSymbol : 
+                    'N/A'
+                }
+              </div>
+              <PriceChart tokenAddress={params.tokenAddress} tokenDecimals={pair.decimals} />
+            </Panel>
+            <br />
+            <Panel 
+              bordered 
+              defaultExpanded 
+              collapsible 
+              header={<p style={panelStyle}>Token Info</p>}
+            >
+              {tokenInfoList.map((item) => renderTokenInfo(item.title, item.content))}
+            </Panel>
+          </Content>
+        </Container>
+        <Footer><p style={{textAlign: 'center',  fontSize: '1rem'}}>©️ 2023 mARsLab</p></Footer>
+      </Container>
+    }
+  </>);
 };

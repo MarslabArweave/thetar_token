@@ -12,6 +12,9 @@ import {
   swap,
 } from '../lib/api';
 import { div, mul, pow, myToLocaleString } from '../lib/math';
+import { ConnectWallet } from './ConnectWallet/ConnectWallet';
+import { Container, Content, Footer, Header } from 'rsuite';
+import BackIcon from '@rsuite/icons/legacy/Left';
 
 export const Faucet = (props) => {
   const [balance, setBalance] = React.useState('N/A');
@@ -48,9 +51,7 @@ export const Faucet = (props) => {
 
   if (!props.walletConnect) {
     return (
-      <div className='darkRow'>
-        Please connect wallet first!
-      </div>
+      <ConnectWallet />
     );
   }
 
@@ -73,43 +74,65 @@ export const Faucet = (props) => {
   }
   
   return (
-    <>
-      <div className='faucetTitle'>Faucet Information(stage 1):</div>
-      <div style={{'margin-top': '1rem'}}>
-        <span className='faucetKey'>$TAR price:</span>
-        <span className='faucetValue'> 1 $TAR = {price} $AR; 1 $AR = {div(1, price).toFixed(tarDecimals)} $TAR</span>
-      </div>
-      <div style={{'margin-top': '1rem'}}>
-        <span className='faucetKey'>$TAR in pool:</span>
-        <span className='faucetValue'> {allowance} $TAR</span>
-      </div>
-      <div style={{'margin-top': '1rem'}}>
-        <span className='faucetKey'>Total claimed:</span>
-        <span className='faucetValue'> {poured} $TAR</span>
-      </div>
-      <div style={{'margin-top': '1rem'}}>
-        <span className='faucetKey'>$AR balance:</span>
-        <span className='faucetValue'> {balance} $AR</span>
-      </div>
-      
-      <TextInput 
-        title='Claim $TAR:'
-        tip={
-          <>❕
-            {Number.isNaN(Number(amount)) ? 
-                'The amount of $TAR you enter is not valid!' : 
-                'You will swap ' + myToLocaleString(mul(amount, price)) + '$AR for ' + myToLocaleString(amount) + '$TAR token.'
+    <Container>
+      <Header>
+        <span onClick={()=>{window.location.href=`#`}} style={{cursor: 'pointer'}}>
+          {React.cloneElement(<BackIcon />, {
+            style: {
+              fontSize: '1.5rem',
             }
-          </>
-        }
-        onChange={setClaimAmount}
-        placeholder='e.g. 123.45'
-      />
-      <SubmitButton 
-        buttonText='Claim'
-        buttonSize='Medium'
-        submitTask={makeSwap}
-      />
+          })}
+        </span>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Faucet
+      </Header>
+      <Container>
+        <Content>
+          <div className='faucetTitle'>Faucet Information(stage 1):</div>
+          <div style={{'margin-top': '1rem'}}>
+            <span className='faucetKey'>$TAR price:</span>
+            <span className='faucetValue'> 1 $TAR = {price} $AR; 1 $AR = {div(1, price).toFixed(tarDecimals)} $TAR</span>
+          </div>
+          <div style={{'margin-top': '1rem'}}>
+            <span className='faucetKey'>$TAR in pool:</span>
+            <span className='faucetValue'> {allowance} $TAR</span>
+          </div>
+          <div style={{'margin-top': '1rem'}}>
+            <span className='faucetKey'>Total claimed:</span>
+            <span className='faucetValue'> {poured} $TAR</span>
+          </div>
+          <div style={{'margin-top': '1rem'}}>
+            <span className='faucetKey'>$AR balance:</span>
+            <span className='faucetValue'> {balance} $AR</span>
+          </div>
+          
+          <TextInput 
+            title='Claim $TAR:'
+            tip={
+              <>❕
+                {Number.isNaN(Number(amount)) ? 
+                    'The amount of $TAR you enter is not valid!' : 
+                    'You will swap ' + myToLocaleString(mul(amount, price)) + '$AR for ' + myToLocaleString(amount) + '$TAR token.'
+                }
+              </>
+            }
+            onChange={setClaimAmount}
+            placeholder='e.g. 123.45'
+          />
+          <SubmitButton 
+            buttonText='Claim'
+            buttonSize='Medium'
+            submitTask={makeSwap}
+          />
+        </Content>
+      </Container>
+      <Footer><p style={{textAlign: 'center',  fontSize: '1rem'}}>©️ 2023 mARsLab</p></Footer>
+    </Container>
+  );
+
+  return (
+    <>
+      
     </>
   );
 };

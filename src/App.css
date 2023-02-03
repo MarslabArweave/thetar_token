@@ -310,3 +310,7 @@ table, th, td {
   font-size: medium;
   color: rgb(163, 161, 161);
 }
+
+.rs-input-number-btn-group-vertical {
+  display: none;
+}

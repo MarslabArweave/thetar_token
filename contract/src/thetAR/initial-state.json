@@ -2,7 +2,6 @@
   "owner": "replace_with_creator_wallet",
   "tokenSrcTxs": [],
   "thetarTokenAddress": "replace_with_thetar_pst_address",
-  "maxPairId": -1,
   "pairInfos": {},
   "userOrders": {},
   "orderInfos": {}

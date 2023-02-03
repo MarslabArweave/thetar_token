@@ -13,6 +13,7 @@ import { PairDetail } from './components/PairDetail';
 import { sleep } from 'warp-contracts';
 import { Faucet } from './components/Faucet';
 import { About } from './components/About';
+import { Trade } from './components/Trade';
 
 const App = () => {
   const [isContractConnected, setIsContractConnected] = React.useState(false);
@@ -43,6 +44,7 @@ const App = () => {
             <Route path="/about" element={<AboutFrame />} />
             <Route path="/my" element={<MyFrame walletConnect={isWalletConnected}/>} />
             <Route path="/pair/:tokenAddress" element={<PairDetailFrame walletConnect={isWalletConnected}/>} />
+            <Route path="/trade/:tokenAddress" element={<TradeFrame walletConnect={isWalletConnected}/>} />
           </Routes>
         </main>
       </div>
@@ -94,6 +96,14 @@ const PairDetailFrame = (props) => {
   return (
     <>
       <PairDetail walletConnect={props.walletConnect}/>
+    </>
+  );
+};
+
+const TradeFrame = (props) => {
+  return (
+    <>
+      <Trade walletConnect={props.walletConnect}/>
     </>
   );
 };

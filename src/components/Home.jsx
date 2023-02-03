@@ -6,6 +6,7 @@ import {
 import { PageLoading } from './PageLoading/PageLoading';
 import { PairList } from './PairList';
 import { SearchFrame } from './SearchFrame/SearchFrame';
+import { Container, Content, Footer, Header } from 'rsuite';
 
 const trustPairs = [];
 
@@ -67,8 +68,8 @@ export const Home = (props) => {
       for (const addr in pairs.result) {
         if (Object.hasOwnProperty.call(pairs.result, addr)) {
           const info = pairs.result[addr];
-          if (info.symbol.toLowerCase().includes(pairFilter.toLocaleLowerCase())) {
-            addrFilter.push(info.symbol);
+          if (info.symbol.toLowerCase().includes(parsedFilter.toLowerCase())) {
+            addrFilter.push(addr);
           }
         }
       }
@@ -100,6 +101,7 @@ export const Home = (props) => {
         const pairInfo = pairs.result[targetPair];
         aggregatedPairInfos.push({
           pstTicker: pairInfo.symbol,
+          name: pairInfo.name,
           logo: pairInfo.logo,
           description: pairInfo.description,
           decimals: pairInfo.decimals,
@@ -118,21 +120,26 @@ export const Home = (props) => {
       />
     );
   }
-  
+
   return (
-    <>
-      <SearchFrame
-        prompt={`Enter '$ticker' OR 'tokenAddress'`}
-        onSearch={trigger}
-      />
-      <PageLoading 
-        submitTask={searchPairs}
-      />
-      { 
-        pairs && pairs.result && 
-        orders && orders.result &&
-        renderPairList() 
-      }
-    </>
+    <Container>
+      <Container>
+        <Content>
+        <SearchFrame
+          prompt={`Enter '$ticker' OR 'tokenAddress'`}
+          onSearch={trigger}
+        />
+        <PageLoading 
+          submitTask={searchPairs}
+        />
+        { 
+          pairs && pairs.result && 
+          orders && orders.result &&
+          renderPairList() 
+        }
+        </Content>
+      </Container>
+      <Footer><p style={{textAlign: 'center',  fontSize: '1rem'}}>©️ 2023 mARsLab</p></Footer>
+    </Container>
   );
 };

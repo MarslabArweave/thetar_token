@@ -48,7 +48,7 @@ export function pow(x, y) {
   if (y >= 0) {
     return Math.pow(x, y);
   } else {
-    return Math.pow(x, y).toFixed(-y);
+    return Number(Math.pow(x, y).toFixed(-y));
   }
 }
 

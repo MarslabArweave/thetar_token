@@ -43,4 +43,8 @@ export class intelliContract {
   async writeInteraction(input, options) {
     return await this.contract4Write.writeInteraction(input, options);
   }
+
+  async readState(blockHeight) {
+    return await this.contract4Read.readState(blockHeight);
+  }
 }
