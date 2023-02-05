@@ -6,7 +6,10 @@ import {
   tarSymbol,
   calculatePriceWithDecimals,
   getContractTxInfo,
-  getContractData
+  getContractData,
+  getDateByTx,
+  getName,
+  getTarget
 } from '../lib/api';
 import { 
   Container, 
@@ -46,12 +49,34 @@ export const PairDetail = (props) => {
     if (pair && order) {
       const contractData = JSON.parse(await (await getContractData(params.tokenAddress)).result);
       const contractInfo = (await getContractTxInfo(params.tokenAddress)).result;
+      const mintDate = await getDateByTx(params.tokenAddress);
       const totalSupply = mul(contractData.totalSupply, pow(10, -contractData.decimals));
+      let creatorContent = contractInfo.owner_address;
+
+      // check if bind to a polaris name
+      const polarisNameRet = await getName(contractInfo.owner_address);
+      if (polarisNameRet.status === true && 
+          polarisNameRet.result !== undefined && 
+          polarisNameRet.result !== null &&
+          polarisNameRet.result.domain === 'wallet') {
+        const domain = polarisNameRet.result.domain;
+        const name = polarisNameRet.result.name;
+        const polarisNameTargetRet = await getTarget(domain, name);
+        if (polarisNameTargetRet.status === true && polarisNameTargetRet.result.target) {
+          creatorContent = 
+            <a 
+              href={`https://arweave.net/wbo15PDbhXjpGMSGV8wh-XhlfFgjXKOZPw-wvEE24xI/#/${domain}/${name}`}
+            > 
+              {`${name}.${domain}`} {<LinkIcon />}
+            </a>;
+        }
+      }
+          
       setTokenInfoList([
         {title: 'Token Address', content: <a href={`https://www.arweave.net/_tfx0j4nhCwRDYmgU6XryFDceF52ncPKVivot5ijwdQ/#/${params.tokenAddress}`}>{params.tokenAddress} {<LinkIcon />}</a>}, 
-        {title: 'Creator', content: contractInfo.owner_address},
+        {title: 'Creator', content: creatorContent},
         {title: 'Decimals', content: pair.decimals},
-        {title: 'Mint Date', content: contractInfo.created_at.substring(0, 10)},
+        {title: 'Mint Date', content: mintDate.status ? mintDate.result : 'Unknown'},
         {title: 'Total Supply', content: totalSupply},
         {title: 'Description', content: pair.description},
       ]);

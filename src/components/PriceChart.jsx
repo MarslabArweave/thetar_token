@@ -18,8 +18,8 @@ import { add } from '../lib/math';
 
 export const PriceChart = (props) => {
   const [range, setRange] = React.useState(7);
-  const [priceList, setPriceList] = React.useState([0.01]);
-  const [dateList, setDateList] = React.useState(['2023-01-01']);
+  const [priceList, setPriceList] = React.useState([]);
+  const [dateList, setDateList] = React.useState([]);
 
   const option = {
     tooltip : {

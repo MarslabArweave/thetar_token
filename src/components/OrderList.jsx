@@ -64,7 +64,7 @@ export const OrderList = (props) => {
     };
 
     let buys = pickOrders(sortedBuys, 5, {color: 'green'});
-    let sells = pickOrders(sortedSells, 5, {color: 'red'});
+    let sells = pickOrders(sortedSells, 5, {color: 'red'}).reverse();
     
     let data = [];
     data = data.concat(sells);
