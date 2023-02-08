@@ -13,12 +13,24 @@ export const OrderList = (props) => {
     onRefreshButtonClicked();
   }, [props.refreshCounter]);
 
+  React.useEffect(async () => {
+    setRefreshing(props.submitDisable);
+  }, [props.submitDisable]);
+
   function onRefreshButtonClicked() {
     if (refreshing) return;
     setRefreshing(true);
+
+    // trigger submit enable signal
+    props.onSubmitDisabled(true);
+
     orderInfo(props.tokenAddress).then(async ret => {
       console.log('onRefreshButtonClicked, orderInfo: ', ret);
       setRefreshing(false);
+
+      // trigger submit enable signal
+      props.onSubmitDisabled(false);
+
       if (ret.status === true) {
         setOrders(ret.result);
       }

@@ -58,6 +58,14 @@ export const MyOrders = (props) => {
     fetchUserOrders();
   }, [props.refreshCounter]);
 
+  React.useEffect(async () => {
+    props.onSubmitDisabled(cancelling);
+  }, [cancelling]);
+
+  React.useEffect(async () => {
+    setCancelling(props.submitDisable);
+  }, [props.submitDisable]);
+
   const onRefresh = () => {
     props.onRefresh(props.refreshCounter+1);
   }
@@ -111,7 +119,6 @@ export const MyOrders = (props) => {
         cancelling && 
         <Loader 
           center inverse backdrop 
-          content= 'cancelling ...' 
           style= {{height: document.body.scrollHeight*1.8}}
         />
       }

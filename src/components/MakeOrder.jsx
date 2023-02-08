@@ -189,9 +189,15 @@ export const MakeOrder = (props) => {
     const plainQuantity = orderType==='limit' && dirType==='buy' ? 
         plainTotal : plainVolume;
 
+    // trigger submit enable signal
+    props.onSubmitDisabled(true);
+
     // make order
     console.log('make order: ', plainVolume, plainTotal, plainPrice);
     const ret = await createOrder(dirType, plainQuantity, plainPrice, props.tokenAddress);
+
+    // trigger submit enable signal
+    props.onSubmitDisabled(false);
 
     // trigger refresh signal
     props.onRefresh(props.refreshCounter+1);
@@ -282,6 +288,7 @@ export const MakeOrder = (props) => {
           buttonText={dirType}
           color={dirType==='buy'?'green':'red'} 
           submitTask={onMakeOrder}
+          disabled={props.submitDisable}
         />
       </div>
     </>

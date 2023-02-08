@@ -23,6 +23,7 @@ export const Trade = (props) => {
   const [tarBalance, setTarBalance] = React.useState();
   const [tokenBalance, setTokenBalance] = React.useState();
   const [refreshCounter, setRefreshCounter] = React.useState(0);
+  const [submitDisabled, setSubmitDisabled] = React.useState(false);
 
   React.useEffect(async () => {
     fetchInfos();
@@ -96,8 +97,11 @@ export const Trade = (props) => {
                   currentPrice={order.currentPrice}
                   tarBalance={tarBalance}
                   tokenBalance={tokenBalance}
+                  // UI control
                   refreshCounter={refreshCounter} // refresh controller
                   onRefresh={setRefreshCounter} // refresh callback
+                  submitDisable={submitDisabled} // submit enable controller
+                  onSubmitDisabled={setSubmitDisabled} // submit enable callback
                 />
               </FlexboxGrid.Item>
               <FlexboxGrid.Item colspan={12}>
@@ -107,8 +111,11 @@ export const Trade = (props) => {
                     tokenAddress={params.tokenAddress}
                     decimals={pair.decimals}
                     tokenSymbol={pair.symbol}
+                    // UI control
                     refreshCounter={refreshCounter} // refresh controller
                     onRefresh={setRefreshCounter} // refresh callback
+                    submitDisable={submitDisabled} // submit enable controller
+                    onSubmitDisabled={setSubmitDisabled} // submit enable callback
                   />
                 </div>
               </FlexboxGrid.Item>
@@ -122,9 +129,12 @@ export const Trade = (props) => {
                   header={<p style={panelStyle}>My Orders</p>}
                 >
                   <MyOrders
+                    tokenAddress={params.tokenAddress}
+                    // UI control
                     refreshCounter={refreshCounter} // refresh controller
                     onRefresh={setRefreshCounter} // refresh callback
-                    tokenAddress={params.tokenAddress}
+                    submitDisable={submitDisabled} // submit enable controller
+                    onSubmitDisabled={setSubmitDisabled} // submit enable callback
                   />
                 </Panel>
               </FlexboxGrid.Item>
