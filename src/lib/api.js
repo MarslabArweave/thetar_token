@@ -10,8 +10,8 @@ import { stat } from 'fs';
 LoggerFactory.INST.logLevel('error');
 
 // addresses
-const thetARContractAddress = 'N6GMkbqD0KajXFUYLVUOxyuL7RjSfSjzwn5shwjLlmc';
-const faucetContractAddress = 'TeOZVs6sRgFzBgONzH6ichc-4_j6JtgiVlDzwYXodaY';
+const thetARContractAddress = 'Yqm4ienHJuhtrox36YdmPKxGTDYNRKHgNK2JzcxrweQ';
+const faucetContractAddress = 'XR6cAhdiR_H7Hr8iPpCaSXWwpTl5yPG3ziNr7DP8qAk';
 const ownerWalletAdrress = 'g-HsAODsIOoTG4MgvmeOTmqyA_RKMupujUuok-nrmkg';
 const polarisContractAddress = 'tU5g9rDKAQJwYgi_leautnj52qxlqjyWhENO0tSQjq8';
 export const tarAddress = "0IdGAPaSVNzo-zVjyZ7BvYJC88tkwbi8tebSA-1OWcM";
