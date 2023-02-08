@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
+import { useNavigate } from 'react-router-dom';
 import { 
   genRaise,
   getBlockHeight,
@@ -17,6 +18,8 @@ import {
 import { add } from '../lib/math';
 
 export const PriceChart = (props) => {
+  const navigate = useNavigate();
+
   const [range, setRange] = React.useState(7);
   const [priceList, setPriceList] = React.useState([]);
   const [dateList, setDateList] = React.useState([]);
@@ -131,7 +134,7 @@ export const PriceChart = (props) => {
             block 
             size='md' 
             appearance="primary"
-            onClick={()=>{window.location.href=`/#/trade/${props.tokenAddress}`}}
+            onClick={()=>{navigate(`/trade/${props.tokenAddress}`)}}
           >Trade</Button>
         </Col>
       </Row>
