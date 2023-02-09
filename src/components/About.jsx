@@ -4,8 +4,11 @@ import remarkGfm from 'remark-gfm';
 import documentation from '../doc.md';
 import { Container, Content, Footer, Header } from 'rsuite';
 import BackIcon from '@rsuite/icons/legacy/Left';
+import { useNavigate } from 'react-router-dom';
 
 export const About = (props) => {
+  const navigate = useNavigate();
+
   const [detail, setDetail] = React.useState('');
 
   React.useEffect(async () => {
@@ -15,7 +18,7 @@ export const About = (props) => {
   return (
     <Container>
       <Header>
-        <span onClick={()=>{window.location.href=`#`}} style={{cursor: 'pointer'}}>
+        <span onClick={()=>{navigate(`/`)}} style={{cursor: 'pointer'}}>
           {React.cloneElement(<BackIcon />, {
             style: {
               fontSize: '1.5rem',

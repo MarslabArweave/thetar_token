@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Container, Content, FlexboxGrid, Footer, Header, Panel } from 'rsuite';
 import { getBalance, orderInfo, pairInfo, tarAddress } from '../lib/api';
 import { MakeOrder } from './MakeOrder';
@@ -17,6 +17,7 @@ const panelStyle = {
 
 export const Trade = (props) => {
   const params = useParams();
+  const navigate = useNavigate();
 
   const [pair, setPair] = React.useState();
   const [order, setOrder] = React.useState();
@@ -76,7 +77,7 @@ export const Trade = (props) => {
     {pair && order && tarBalance !== undefined && tokenBalance !== undefined &&
       <Container>
         <Header>
-          <span onClick={()=>{window.location.href=`/#/pair/${params.tokenAddress}`}} style={{cursor: 'pointer'}}>
+          <span onClick={()=>{navigate(`/pair/${params.tokenAddress}`)}} style={{cursor: 'pointer'}}>
             {React.cloneElement(<BackIcon />, {
               style: {
                 fontSize: '1.5rem',

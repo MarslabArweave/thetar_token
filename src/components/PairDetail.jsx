@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { 
   pairInfo,
   orderInfo,
@@ -40,6 +40,7 @@ const panelStyle = {
 export const PairDetail = (props) => {
   const dominentSymbol = tarSymbol;
   const params = useParams();
+  const navigate = useNavigate();
 
   const [tokenInfoList, setTokenInfoList] = React.useState([]);
   const [pair, setPair] = React.useState();
@@ -116,7 +117,7 @@ export const PairDetail = (props) => {
     {pair && order &&
       <Container>
         <Header>
-          <span onClick={()=>{window.location.href="#"}} style={{cursor: 'pointer'}}>
+          <span onClick={()=>{navigate(`/`)}} style={{cursor: 'pointer'}}>
             {React.cloneElement(<BackIcon />, {
               style: {
                 fontSize: '1.5rem',

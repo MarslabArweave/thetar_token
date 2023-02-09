@@ -9,8 +9,11 @@ import { SubmitButton } from './SubmitButton/SubmitButton';
 import { TextInput } from './TextInput/TextInput';
 import { Container, Content, Footer, Header } from 'rsuite';
 import BackIcon from '@rsuite/icons/legacy/Left';
+import { useNavigate } from 'react-router-dom';
 
 export const AddPair = (props) => {
+  const navigate = useNavigate();
+
   const [tokenAddress, setTokenAddress] = React.useState();
   const [description, setDescription] = React.useState('');
   const [logo, setLogo] = React.useState();
@@ -27,7 +30,7 @@ export const AddPair = (props) => {
   return (
     <Container>
       <Header>
-        <span onClick={()=>{window.location.href=`#`}} style={{cursor: 'pointer'}}>
+        <span onClick={()=>{navigate(`/`)}} style={{cursor: 'pointer'}}>
           {React.cloneElement(<BackIcon />, {
             style: {
               fontSize: '1.5rem',
