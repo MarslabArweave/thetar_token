@@ -16,13 +16,15 @@ import {
   Header, 
   Content, 
   Footer, 
-  Panel, 
+  Panel,
+  Placeholder, 
 } from 'rsuite';
 import { PageLoading } from './PageLoading/PageLoading';
 import BackIcon from '@rsuite/icons/legacy/Left';
 import LinkIcon from '@rsuite/icons/legacy/ExternalLink';
 import { mul, pow } from '../lib/math';
 import { PriceChart } from './PriceChart';
+import PlaceholderParagraph from 'rsuite/esm/Placeholder/PlaceholderParagraph';
 
 const contentStyle = {
   padding: '1rem', 
@@ -74,7 +76,7 @@ export const PairDetail = (props) => {
       }
           
       setTokenInfoList([
-        {title: 'Token Address', content: <a href={`https://www.arweave.net/_tfx0j4nhCwRDYmgU6XryFDceF52ncPKVivot5ijwdQ/#/${params.tokenAddress}`}>{params.tokenAddress} {<LinkIcon />}</a>}, 
+        {title: 'Token Address', content: <a href={`https://www.arweave.net/G2t61jWAFfoTjaybLtjouWEM9IFZoNdxJMX2GzIXUSA/#/token/${params.tokenAddress}`}>{params.tokenAddress} {<LinkIcon />}</a>}, 
         {title: 'Creator', content: creatorContent},
         {title: 'Decimals', content: pair.decimals},
         {title: 'Mint Date', content: mintDate.status ? mintDate.result : 'Unknown'},
@@ -150,7 +152,11 @@ export const PairDetail = (props) => {
               collapsible 
               header={<p style={panelStyle}>Token Info</p>}
             >
-              {tokenInfoList.map((item) => renderTokenInfo(item.title, item.content))}
+              {
+                tokenInfoList.length === 0 ? 
+                <Placeholder.Paragraph rows={8} /> :
+                tokenInfoList.map((item) => renderTokenInfo(item.title, item.content))
+              }
             </Panel>
           </Content>
         </Container>
