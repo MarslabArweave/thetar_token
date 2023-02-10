@@ -39,7 +39,7 @@ LoggerFactory.INST.logLevel('error');
     src: wrcSrc,
     wasmSrcCodeDir: path.join(__dirname, '../src/wrc-20_fixed_supply'),
     wasmGlueCode: path.join(__dirname, '../pkg/erc20-contract.js'),
-  })).contractTxId;
+  }, true)).contractTxId;
 
   // deploy thetAR contract
   const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/thetAR/contract.js'), 'utf8');

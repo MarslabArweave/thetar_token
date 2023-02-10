@@ -13,8 +13,8 @@ LoggerFactory.INST.logLevel('error');
 const thetARContractAddress = 'N6GMkbqD0KajXFUYLVUOxyuL7RjSfSjzwn5shwjLlmc';
 const faucetContractAddress = 'TeOZVs6sRgFzBgONzH6ichc-4_j6JtgiVlDzwYXodaY';
 const ownerWalletAdrress = 'g-HsAODsIOoTG4MgvmeOTmqyA_RKMupujUuok-nrmkg';
-const polarisContractAddress = 'GYMOnUEpGlEcbDBU0CFl7kgfv9i5Jw2qC-XR3She0-o';
-export const tarAddress = "_LX9tXPv3IkUneWbK873cQIGLH9yyQXBOvmTQ0jg8VM";
+const polarisContractAddress = 'tU5g9rDKAQJwYgi_leautnj52qxlqjyWhENO0tSQjq8';
+export const tarAddress = "0IdGAPaSVNzo-zVjyZ7BvYJC88tkwbi8tebSA-1OWcM";
 export const tarSymbol = "TAR";
 export const tarDecimals = 5;
 
