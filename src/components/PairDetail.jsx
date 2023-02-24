@@ -61,7 +61,7 @@ export const PairDetail = (props) => {
       if (polarisNameRet.status === true && 
           polarisNameRet.result !== undefined && 
           polarisNameRet.result !== null &&
-          polarisNameRet.result.domain === 'wallet') {
+          polarisNameRet.result.domain === 'ar') {
         const domain = polarisNameRet.result.domain;
         const name = polarisNameRet.result.name;
         const polarisNameTargetRet = await getTarget(domain, name);
