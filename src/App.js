@@ -40,7 +40,6 @@ const App = () => {
           <Routes>
             <Route path="/" name="" element={<HomeFrame />} />
             <Route path="/addPair" element={<AddPairFrame walletConnect={isWalletConnected}/>} />
-            <Route path="/faucet" element={<FaucetFrame walletConnect={isWalletConnected}/>} />
             <Route path="/about" element={<AboutFrame />} />
             <Route path="/my" element={<MyFrame walletConnect={isWalletConnected}/>} />
             <Route path="/pair/:tokenAddress" element={<PairDetailFrame walletConnect={isWalletConnected}/>} />
@@ -64,14 +63,6 @@ const AddPairFrame = (props) => {
   return (
     <>
       <AddPair walletConnect={props.walletConnect}/>
-    </>
-  );
-};
-
-const FaucetFrame = (props) => {
-  return (
-    <>
-      <Faucet walletConnect={props.walletConnect}/>
     </>
   );
 };

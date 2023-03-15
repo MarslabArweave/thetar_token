@@ -34,6 +34,7 @@ export const My = (props) => {
           <MyOrders 
             refreshCounter={refreshCounter} // refresh controller
             onRefresh={setRefreshCounter} // refresh callback
+            onSubmitDisabled={()=>{}}
           />
         </Content>
       </Container>

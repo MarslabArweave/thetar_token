@@ -58,40 +58,10 @@ LoggerFactory.INST.logLevel('error');
     initState: JSON.stringify(contractInit),
     src: contractSrc,
   })).contractTxId;
-  
-  // deploy faucet contract
-  const faucetSrc = fs.readFileSync(path.join(__dirname, '../dist/faucet/contract.js'), 'utf8');
-  const faucetInitFromFile = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../dist/faucet/initial-state.json'), 'utf8')
-  );
-  const faucetContractInit = {
-    ...faucetInitFromFile,
-    owner: walletAddress,
-    tokenAddress: tarTxId,
-    price: 0.0000001
-  };
-  const faucetContractTxId = (await warp.createContract.deploy({
-    wallet: walletJwk,
-    initState: JSON.stringify(faucetContractInit),
-    src: faucetSrc,
-  })).contractTxId;
-
-  // add funds to faucet
-  const tarContract = warp.contract(tarTxId);
-  tarContract.connect(walletJwk);
-  await tarContract.writeInteraction(
-    {
-      function: 'approve',
-      spender: faucetContractTxId,
-      amount: 400000000000
-    }
-  );
 
   console.log('wallet address: ', walletAddress);
   console.log('txid: ', contractTxId);
   console.log('TAR txid: ', tarTxId);
-  console.log('faucet txid: ', faucetContractTxId);
   fs.writeFileSync(path.join(__dirname, 'thetAR-txid.json'), contractTxId);
   fs.writeFileSync(path.join(__dirname, 'tar-txid.json'), tarTxId);
-  fs.writeFileSync(path.join(__dirname, 'faucet-txid.json'), tarTxId);
 })();
