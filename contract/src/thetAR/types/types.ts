@@ -1,7 +1,5 @@
 export interface addPairParam {
   tokenAddress: string;
-  logo: string;
-  description: string;
 }
 
 export interface createOrderParam {
@@ -15,15 +13,9 @@ export interface cancelOrderParam {
   orderId: string;
 }
 
-export interface pairInfoParam {
+export interface orderInfoParam {
   tokenAddress: string;
 }
-
-export interface addTokenSrcTxParam {
-  src: string;
-}
-
-export type orderInfoParam = pairInfoParam;
 
 export interface userOrderParam {
   address: string;
@@ -34,26 +26,22 @@ export interface currentPriceResult {
 }
 
 export interface userOrderResult {
-  [tokenAddress: string]: orderInterface[];
-}
-
-export type pairInfoResult = pairInfoInterface;
-
-export interface pairInfoResults {
-  [tokenAddress: string]: pairInfoInterface;
+  [tokenAddress: string]: orderInterface;
 }
 
 export interface orderInfoResult {
   currentPrice: number;
-  orders: orderInterface[];
+  orders: orderInterface;
 }
 
 export interface orderInfosResult {
   [tokenAddress: string]: { 
     currentPrice: number;
-    orders: orderInterface[];
+    orders: orderInterface;
   };
 }
+
+export type tokenInfosResult = string[];
 
 export interface Action {
   input: Input;
@@ -65,44 +53,34 @@ export interface Input {
   params: Params;
 }
 
-export interface tokenInfoInterface {
-  tokenAddress: string;
-  logo: string;
-  description: string;
+export interface orderInterface {
+  buy: orderInfoInterface[];
+  sell: orderInfoInterface[];
 }
 
-export interface orderInterface {
+export interface orderInfoInterface {
   creator: string;
-  direction: 'sell' | 'buy';
   quantity: number;
   price: number;
   orderId: string;
 }
 
-export interface pairInfoInterface {
-  logo: string;
-  description: string;
-  name: string;
-  symbol: string;
-  decimals: string;
-}
-
 export interface State {
   owner: string;
-  tokenSrcTxs: string[];
   thetarTokenAddress: string;
+  addFee: number;
+  orderFee: number;
 
-  pairInfos: {[tokenAddress: string]: pairInfoInterface};
-  userOrders: {
-    [walletAddress: string]: {
-      [tokenAddress: string]: orderInterface[];
-    }
-  };
   orderInfos: {
     [tokenAddress: string]: { 
       currentPrice: number;
-      orders: orderInterface[];
+      orders: orderInterface;
     };
+  };
+  userOrders: {
+    [walletAddress: string]: {
+      [nftAddress: string]: orderInterface;
+    }
   };
 }
 
@@ -110,28 +88,22 @@ export type Function =
     'createOrder' | 
     'cancelOrder' | 
     'addPair' | 
-    'pairInfo' |
-    'tokenInfo' |
     'pairInfos' |
     'orderInfo' |
     'orderInfos' |
-    'addTokenSrcTx' |
     'userOrder';
 
 export type Params = 
     createOrderParam |
     addPairParam |
     cancelOrderParam |
-    pairInfoParam |
     orderInfoParam |
-    addTokenSrcTxParam |
     userOrderParam;
 
 export type Result = 
-    pairInfoResult |
-    pairInfoResults |
     orderInfoResult |
     orderInfosResult |
-    userOrderResult;
+    userOrderResult |
+    tokenInfosResult;
     
 export type ContractResult = { state: State } | { result: Result };

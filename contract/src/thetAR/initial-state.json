@@ -1,8 +1,8 @@
 {
   "owner": "replace_with_creator_wallet",
-  "tokenSrcTxs": [],
   "thetarTokenAddress": "replace_with_thetar_pst_address",
-  "pairInfos": {},
+  "addFee": 100000000,
+  "orderFee": 100000,
   "userOrders": {},
   "orderInfos": {}
 }

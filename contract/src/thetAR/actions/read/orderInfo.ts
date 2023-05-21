@@ -1,4 +1,5 @@
 import * as type from '../../types/types';
+import { contractAssert } from '../common';
 
 declare const ContractError;
 
@@ -10,9 +11,10 @@ export const orderInfo = async (
   let tokenAddress: string = param.tokenAddress;
   let result: type.Result;
 
-  if (!state.pairInfos.hasOwnProperty(tokenAddress)) {
-    throw new ContractError('Pair does not exist!');
-  }
+  contractAssert(
+    state.orderInfos.hasOwnProperty(tokenAddress),
+    'Token does not exist!'
+  );
 
   result = state.orderInfos[tokenAddress];
 

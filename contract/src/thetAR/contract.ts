@@ -2,8 +2,6 @@ import * as type from './types/types';
 import { addPair } from './actions/write/addPair';
 import { createOrder } from './actions/write/createOrder';
 import { cancelOrder } from './actions/write/cancelOrder';
-import { addTokenSrcTx } from './actions/write/addTokenSrcTx';
-import { pairInfo } from './actions/read/pairInfo';
 import { pairInfos } from './actions/read/pairInfos';
 import { orderInfos } from './actions/read/orderInfos';
 import { orderInfo } from './actions/read/orderInfo';
@@ -21,16 +19,12 @@ export async function handle(state: type.State, action: type.Action): Promise<ty
       return await createOrder(state, action);
     case 'cancelOrder':
       return await cancelOrder(state, action);
-    case 'pairInfo':
-      return await pairInfo(state, action);
     case 'pairInfos':
       return await pairInfos(state, action);
     case 'orderInfo':
       return await orderInfo(state, action);
     case 'orderInfos':
       return await orderInfos(state, action);
-    case 'addTokenSrcTx':
-      return await addTokenSrcTx(state, action);
     case 'userOrder':
       return await userOrder(state, action);
     default:

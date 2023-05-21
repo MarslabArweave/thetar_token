@@ -1,4 +1,5 @@
 import * as type from '../../types/types';
+import { contractAssert } from '../common';
 
 declare const ContractError;
 interface Transaction {
@@ -11,29 +12,38 @@ export const createOrder = async (
   state: type.State,
   action: type.Action,
 ): Promise<type.ContractResult> => {
+  // pay $TAR for order-placing fee, to avoid flood attack
+  await SmartWeave.contracts.write(
+    state.thetarTokenAddress, 
+    { function: 'transferFrom', from: action.caller, to: state.owner, amount: state.orderFee},
+  );
+
   const param: type.createOrderParam = <type.createOrderParam>action.input.params;
-  if (!state.pairInfos.hasOwnProperty(param.tokenAddress)) {
-    throw new ContractError('Pair does not exist!');
-  }
+  contractAssert(
+    state.orderInfos.hasOwnProperty(param.tokenAddress),
+    'Pair does not exist!'
+  );
   if (param.price !== undefined && param.price !== null) {
-    if (typeof(param.price) !== 'number') {
-      throw new ContractError('Price must be a number!');
-    }
-    if (param.price <= 0 || !Number.isInteger(param.price)) {
-      throw new ContractError('Price must be positive integer!');
-    }
+    contractAssert(
+      typeof(param.price) === 'number',
+      'Price must be null or number!'
+    );
+    contractAssert(
+      param.price > 0 && Number.isInteger(param.price),
+      'Price must be positive integer!'
+    );
   }
 
-  const newOrder: type.orderInterface = {
+  const newOrder: type.orderInfoInterface = {
     creator: action.caller,
     orderId: SmartWeave.transaction.id,
-    direction: param.direction,
     quantity: await checkOrderQuantity(state, action),
     price: param.price,
   }
 
   const { newOrderbook, newUserOrders, transactions, currentPrice } = await matchOrder(
     newOrder,
+    param.direction,
     state.orderInfos[param.tokenAddress].orders,
     state.userOrders,
     param.tokenAddress,
@@ -51,7 +61,6 @@ export const createOrder = async (
   
   // make transactions
   for await (const tx of transactions) {
-    const matchedPair = state.pairInfos[param.tokenAddress];
     const targetTokenAdrress = tx.tokenType === 'dominent' ? 
         state.thetarTokenAddress : param.tokenAddress;
     await SmartWeave.contracts.write(
@@ -70,74 +79,80 @@ const checkOrderQuantity = async (
   const param: type.createOrderParam = <type.createOrderParam>action.input.params;
 
   // fetch allowance
-  let pairInfo = state.pairInfos[param.tokenAddress];
   const tokenAddress: string = param.direction === 'buy' ? state.thetarTokenAddress : param.tokenAddress;
-  const tokenState = await SmartWeave.contracts.readContractState(tokenAddress);
-  let orderQuantity = tokenState.allowances[action.caller][SmartWeave.contract.id];
-
-  // transfer token(s) to contract address
-  await SmartWeave.contracts.write(
-    tokenAddress, 
-    { function: 'transferFrom', from: action.caller, to: SmartWeave.contract.id, amount: orderQuantity},
-  );
+  const tokenState = await SmartWeave.contracts.viewContractState(tokenAddress, {
+    function: 'allowance',
+    owner: action.caller,
+    spender: SmartWeave.contract.id
+  });
+  let orderQuantity = tokenState.result.allowance;
 
   // If direction is buy and order type is limit, covert quantity metric to that of wanted token
   // All quantity in orderbook should metric in trade token, 
   // but in `market` order type & `buy` direction we don't know that.
   if (param.direction === 'buy' && param.price) {
     orderQuantity = Math.floor(orderQuantity / param.price);
+    // transfer token(s) to contract address
+    await SmartWeave.contracts.write(
+      tokenAddress, 
+      { function: 'transferFrom', from: action.caller, to: SmartWeave.contract.id, amount: orderQuantity*param.price},
+    );
+  } else {
+    // transfer token(s) to contract address
+    await SmartWeave.contracts.write(
+      tokenAddress, 
+      { function: 'transferFrom', from: action.caller, to: SmartWeave.contract.id, amount: orderQuantity},
+    );
   }
   return orderQuantity;
 };
 
 const matchOrder = async (
-  newOrder: type.orderInterface,
-  orderbook: type.orderInterface[],
+  newOrder: type.orderInfoInterface,
+  direction: 'buy' | 'sell',
+  orderbook: type.orderInterface,
   userOrders: {
     [walletAddress: string]: {
-      [tokenAddress: string]: type.orderInterface[];
+      [tokenAddress: string]: type.orderInterface;
     }
   },
   tokenAddress,
   caller
 ): Promise<{
-  newOrderbook: type.orderInterface[], 
+  newOrderbook: type.orderInterface, 
   newUserOrders: {
     [walletAddress: string]: {
-      [tokenAddress: string]: type.orderInterface[];
+      [tokenAddress: string]: type.orderInterface;
     }
   },
   transactions: Transaction[],
   currentPrice: number,
 }> => {
   let transactions: Transaction[] = Array<Transaction>();
-  const targetSortDirection = newOrder.direction === 'buy' ? 'sell' : 'buy';
   let totalTradePrice = 0;
   let totalTradeVolume = 0;
 
-  const reverseOrderbook = orderbook.filter(order=>
-    order.direction===targetSortDirection
-  ).sort((a, b) => {
-    if (newOrder.direction === 'buy') {
-      return a.price > b.price ? 1 : -1;
-    } else {
-      return a.price > b.price ? -1 : 1;
-    }
-  });
+  const reverseDirection = direction === 'buy' ? 'sell' : 'buy';
+  const reverseOrderbook = direction === 'buy' ?
+      orderbook.sell :
+      orderbook.buy;
+  let reverseBookSize = reverseOrderbook.length;
 
   const orderType = newOrder.price ? 'limit' : 'market';
-  if (reverseOrderbook.length === 0 && orderType === 'market') {
+  if (reverseBookSize === 0 && orderType === 'market') {
     throw new ContractError(`The first order must be limit type!`);
   }
   const newOrderTokenType = 
-        orderType === 'market' && newOrder.direction === 'buy' ? 
+        orderType === 'market' && direction === 'buy' ? 
         'dominent' : 'trade';
 
-  for (let i = 0; i < reverseOrderbook.length; i ++) {
+  for (let i = 0; i < reverseBookSize; ) {
     const order = reverseOrderbook[i];
+    var nextIndex = i + 1;
 
     // For limit type order, we only process orders which price equals to newOrder.price
     if (orderType === 'limit' && order.price !== newOrder.price) {
+      i = nextIndex;
       continue;
     }
 
@@ -151,12 +166,13 @@ const matchOrder = async (
     totalTradeVolume += targetAmout;
 
     if (targetAmout === 0) {
+      i = nextIndex;
       break;
     }
 
     /// generate transactions
-    const buyer = newOrder.direction === 'buy' ? newOrder : order;
-    const seller = newOrder.direction === 'buy' ? order : newOrder;
+    const buyer = direction === 'buy' ? newOrder : order;
+    const seller = direction === 'buy' ? order : newOrder;
     transactions.push({
       tokenType: 'dominent',
       to: seller.creator,
@@ -173,15 +189,17 @@ const matchOrder = async (
     // 1. update orderbook
     order.quantity -= targetAmout;
     if (order.quantity === 0) {
-      orderbook = orderbook.filter(v=>v.orderId!==order.orderId);
+      reverseOrderbook.splice(i, 1);
+      nextIndex = i;
+      reverseBookSize -= 1;
     }
 
     // 2. update Order in userOrders
-    let userOrderInfos = userOrders[order.creator][tokenAddress];
+    let userOrderInfos = userOrders[order.creator][tokenAddress][reverseDirection];
     let matchedOrderIdx = userOrderInfos.findIndex(value=>value.orderId===order.orderId);
     userOrderInfos[matchedOrderIdx].quantity -= targetAmout;
     if (userOrderInfos[matchedOrderIdx].quantity === 0) {
-      userOrders[order.creator][tokenAddress] = 
+      userOrders[order.creator][tokenAddress][reverseDirection] = 
           userOrderInfos.filter(v=>v.orderId !== order.orderId);
     }
 
@@ -203,16 +221,17 @@ const matchOrder = async (
   }
   // case2: update orderbook and userOrders
   if (orderType === 'limit' && newOrder.quantity !== 0) {
-    orderbook.push({...newOrder});
+    const insertIndex = searchInsert(orderbook[direction], newOrder, direction==='buy');
+    orderbook[direction].splice(insertIndex, 0, {...newOrder});
   }
   if (newOrder.quantity !== 0) {
     if (userOrders[caller] === undefined) {
       userOrders[caller] = {};
     }
-    if (userOrders[caller][tokenAddress] === undefined) {
-      userOrders[caller][tokenAddress] = [];
+    if (!userOrders[caller][tokenAddress]) {
+      userOrders[caller][tokenAddress] = {buy: [], sell: []}
     }
-    userOrders[caller][tokenAddress].push({...newOrder});
+    userOrders[caller][tokenAddress][direction].push({...newOrder});
   }
 
 
@@ -222,4 +241,22 @@ const matchOrder = async (
     transactions: transactions,
     currentPrice: totalTradePrice / totalTradeVolume
   };
+};
+
+const searchInsert = (
+  nums: type.orderInfoInterface[], 
+  target: type.orderInfoInterface, 
+  descending: boolean = false) => {
+  const n = nums.length;
+  let left = 0, right = n - 1, ans = n;
+  while (left <= right) {
+      let mid = ((right - left) >> 1) + left;
+      if (descending ? target.price > nums[mid].price : target.price < nums[mid].price) {
+          ans = mid;
+          right = mid - 1;
+      } else {
+          left = mid + 1;
+      }
+  }
+  return ans;
 };

@@ -1,5 +1,5 @@
 import * as type from '../../types/types';
-import { isAddress } from '../common';
+import { contractAssert, isAddress } from '../common';
 
 declare const ContractError;
 
@@ -11,9 +11,10 @@ export const userOrder = async (
   let address: string = param.address;
   let result: type.Result;
 
-  if (!isAddress(address)) {
-    throw new ContractError(`Invalid wallet address!`);
-  }
+  contractAssert(
+    isAddress(address),
+    'Invalid wallet address!'
+  );
 
   result = state.userOrders[address];
 

@@ -3,7 +3,6 @@ const replace = require('replace-in-file');
 
 const contracts = [
   '/thetAR/contract.ts',
-  '/faucet/contract.ts'
 ];
 
 build({

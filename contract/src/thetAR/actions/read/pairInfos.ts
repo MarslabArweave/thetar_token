@@ -8,7 +8,7 @@ export const pairInfos = async (
 ): Promise<type.ContractResult> => {
   let result: type.Result;
 
-  result = state.pairInfos;
+  result = Object.keys(state.orderInfos);
 
   return { result };
 };

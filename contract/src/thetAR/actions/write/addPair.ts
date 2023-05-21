@@ -1,5 +1,5 @@
 import * as type from '../../types/types';
-import { securityCheck, isAddress } from '../common';
+import { isAddress, contractAssert } from '../common';
 
 declare const ContractError;
 
@@ -9,59 +9,26 @@ export const addPair = async (
 ): Promise<type.ContractResult> => {
   const param: type.addPairParam = <type.addPairParam>action.input.params;
   const tokenAddress: string = param.tokenAddress;
-  const logoTx: string = param.logo;
-  const description: string = param.description;
-  if (!isAddress(tokenAddress)) {
-    throw new ContractError('Token address format error!');
-  }
-  if (!isAddress(logoTx)) {
-    throw new ContractError('You should enter transaction id for Arweave of your logo!');
-  }
-  if (!validDescription(description)) {
-    throw new ContractError('Description you enter is not valid!');
-  }
-  if (state.pairInfos.hasOwnProperty(param.tokenAddress)) {
-    throw new ContractError('Pair already exists!');
-  }
 
-  if (action.caller !== state.owner) {
-    const txQty = SmartWeave.transaction.quantity;
-    const txTarget = SmartWeave.transaction.target;
-    if (txTarget !== state.owner) {
-      throw new ContractError('AddPair fee sent to wrong target!');
-    }
-    if (SmartWeave.arweave.ar.isLessThan(txQty, SmartWeave.arweave.ar.arToWinston('10'))) {
-      throw new ContractError('AddPair fee not right!');
-    }
-    
-    if (!await securityCheck(state.tokenSrcTxs, tokenAddress)) {
-      throw new ContractError('Token contract validation check failed!');
-    }
-  }
+  // pay $TAR for listing token fee, to avoid flood attack
+  await SmartWeave.contracts.write(
+    state.thetarTokenAddress, 
+    { function: 'transferFrom', from: action.caller, to: state.owner, amount: state.addFee},
+  );
 
-  const tokenState = await SmartWeave.contracts.readContractState(tokenAddress);
+  contractAssert(
+    isAddress(tokenAddress),
+    'Token address format error!'
+  );
+  contractAssert(
+    !state.orderInfos.hasOwnProperty(tokenAddress),
+    'Pair already exists!'
+  );
 
-  state.pairInfos[tokenAddress] = {
-    logo: logoTx,
-    description: description,
-    name: tokenState.name,
-    symbol: tokenState.symbol,
-    decimals: tokenState.decimals
-  };
   state.orderInfos[tokenAddress] = {
-    currentPrice: undefined,
-    orders: [],
+    currentPrice: 0,
+    orders: {buy: [], sell: []},
   };
-  for (const user in state.userOrders) {
-    if (Object.prototype.hasOwnProperty.call(state.userOrders, user)) {
-      let userOrder = state.userOrders[user];
-      userOrder[tokenAddress] = [];
-    }
-  }
 
   return { state };
 };
-
-export const validDescription = (desc: string) => 
-  typeof(desc) === 'string' &&
-  desc.length <= 128;

@@ -1,5 +1,5 @@
 import * as type from '../../types/types';
-import { isAddress } from '../common';
+import { contractAssert, isAddress } from '../common';
 
 declare const ContractError;
 
@@ -11,24 +11,29 @@ export const cancelOrder = async (
   const orderId: string = param.orderId;
   const tokenAddress: string = param.tokenAddress;
 
-  if (!isAddress(orderId)) {
-    throw new ContractError(`OrderId not found: ${param.orderId}!`);
-  }
-  if (!state.pairInfos.hasOwnProperty(param.tokenAddress)) {
-    throw new ContractError('Pair does not exist!');
-  }
-  const orderInfo = state.userOrders[action.caller][tokenAddress].find(v=>v.orderId===orderId);
-  const pairInfo = state.pairInfos[tokenAddress];
-  if (!orderInfo) {
-    throw new ContractError(`Cannot get access to pair: ${tokenAddress}!`);
-  }
-  if (!pairInfo) {
-    throw new ContractError(`Pair info record not found: ${tokenAddress}!`);
-  }
+  contractAssert(
+    isAddress(orderId),
+    `OrderId not found: ${param.orderId}!`
+  );
+  contractAssert(
+    state.orderInfos.hasOwnProperty(param.tokenAddress),
+    `Pair does not exist!`
+  );
 
-  const refundAddress = orderInfo.direction === 'buy' ? 
+  let direction = 'buy';
+  let orderInfo = state.userOrders[action.caller][tokenAddress].buy.find(v=>v.orderId===orderId);
+  if (!orderInfo) {
+    direction = 'sell';
+    orderInfo = state.userOrders[action.caller][tokenAddress].sell.find(v=>v.orderId===orderId);
+  }
+  contractAssert(
+    orderInfo !== undefined && orderInfo !== null,
+    `Cannot get access to pair: ${tokenAddress}!`
+  );
+
+  const refundAddress = direction === 'buy' ? 
       state.thetarTokenAddress : tokenAddress;
-  const quantity = orderInfo.direction === 'buy' ? 
+  const quantity = direction === 'buy' ? 
       orderInfo.price * orderInfo.quantity : orderInfo.quantity;
 
   await SmartWeave.contracts.write(
@@ -36,12 +41,12 @@ export const cancelOrder = async (
     { function: 'transfer', to: action.caller, amount: quantity},
   );
 
-  let ordersForUser = state.userOrders[action.caller][tokenAddress];
-  state.userOrders[action.caller][tokenAddress] = 
+  let ordersForUser = state.userOrders[action.caller][tokenAddress][direction];
+  state.userOrders[action.caller][tokenAddress][direction] = 
       ordersForUser.filter(i=>i.orderId!==orderId);
 
-  let ordersForPair = state.orderInfos[tokenAddress].orders;
-  state.orderInfos[tokenAddress].orders = 
+  let ordersForPair = state.orderInfos[tokenAddress].orders[direction];
+  state.orderInfos[tokenAddress].orders[direction] = 
       ordersForPair.filter(i=>i.orderId!==orderId);
 
   return { state };
