@@ -2,6 +2,7 @@ import * as type from './types/types';
 import { addPair } from './actions/write/addPair';
 import { createOrder } from './actions/write/createOrder';
 import { cancelOrder } from './actions/write/cancelOrder';
+import { evolve } from './actions/write/evolve';
 import { pairInfos } from './actions/read/pairInfos';
 import { orderInfos } from './actions/read/orderInfos';
 import { orderInfo } from './actions/read/orderInfo';
@@ -13,6 +14,8 @@ export async function handle(state: type.State, action: type.Action): Promise<ty
   const func = action.input.function;
 
   switch (func) {
+    case 'evolve':
+      return await evolve(state, action);
     case 'addPair':
       return await addPair(state, action);
     case 'createOrder':

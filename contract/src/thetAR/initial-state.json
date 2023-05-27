@@ -1,5 +1,7 @@
 {
   "owner": "replace_with_creator_wallet",
+  "canEvolve": true,
+  "evolve": null,
   "thetarTokenAddress": "replace_with_thetar_pst_address",
   "addFee": 100000000,
   "orderFee": 100000,

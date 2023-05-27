@@ -51,6 +51,7 @@ export interface Action {
 export interface Input {
   function: Function;
   params: Params;
+  value?: string; // used by evolve
 }
 
 export interface orderInterface {
@@ -67,6 +68,8 @@ export interface orderInfoInterface {
 
 export interface State {
   owner: string;
+  canEvolve: boolean;
+  evolve: string | null;
   thetarTokenAddress: string;
   addFee: number;
   orderFee: number;
@@ -85,6 +88,7 @@ export interface State {
 }
 
 export type Function = 
+    'evolve' |
     'createOrder' | 
     'cancelOrder' | 
     'addPair' | 
