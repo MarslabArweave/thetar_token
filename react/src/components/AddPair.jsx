@@ -47,6 +47,7 @@ export const AddPair = (props) => {
           title='Token address:'
           onChange={setTokenAddress}
           placeholder='e.g. KmGb0DGNRfSlQzBYkHRbZYU8TEwaiNtoO-AH-ln1dJg'
+          tip={<p>Mint your token <a href='http://atomic-mint.marslab.top/token'>HERE</a></p>}
         />
         
         <SubmitButton 

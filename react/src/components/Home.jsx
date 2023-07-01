@@ -50,6 +50,7 @@ export const Home = (props) => {
     await asyncCall(async (token)=>{
       const state = (await getState(token.address)).result;
       token.symbol = state.symbol;
+      token.decimals = state.decimals;
       token.name = state.name;
       token.logo = state.logo;
       token.description = state.description;

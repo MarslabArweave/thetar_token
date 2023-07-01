@@ -11,8 +11,8 @@ LoggerFactory.INST.logLevel('error');
 const env = 'mainnet';
 
 // addresses
-const thetARContractAddress = 'UkgGCgDxqQF2mgTTFraPsraexkdYuoQkdFk7PVqrnV4';
-export const tarAddress = "vMxmIixz5mmvKvjh3LstkF9GN4YnDhrIEr_lZatfg_g";
+const thetARContractAddress = 'VcqN2E27rB6aa_ZDSfbNxf8X4amiEzA3RnN8Es1XFEQ';
+export const tarAddress = "ChpMKQ61-ng4Z16YrEI3HkFnezfJvCqgxGyhxH8z_DY";
 export const tarSymbol = "TAR";
 export const tarDecimals = 5;
 

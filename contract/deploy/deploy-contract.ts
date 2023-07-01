@@ -20,7 +20,7 @@ LoggerFactory.INST.logLevel('error');
   const walletSigner = JSON.parse(
     fs.readFileSync(path.join(__dirname, 'key-file.json'), 'utf8')
   );
-  const tarTxId = 'vMxmIixz5mmvKvjh3LstkF9GN4YnDhrIEr_lZatfg_g';
+  const tarTxId = 'ChpMKQ61-ng4Z16YrEI3HkFnezfJvCqgxGyhxH8z_DY';
 
   // deploy thetAR contract
   const contractSrc = fs.readFileSync(path.join(__dirname, '../dist/contract.js'), 'utf8');

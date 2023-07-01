@@ -48,7 +48,7 @@ export const PairDetail = (props) => {
     const init = async () => {
       if (pair && order) {
         const contractInfo = await getTx(params.tokenAddress);
-        const mintDate = await getDateByTx(params.tokenAddress);
+        // const mintDate = await getDateByTx(params.tokenAddress);
         const totalSupply = mul(pair.totalSupply, pow(10, -pair.decimals));
         let creatorContent = contractInfo.owner_address;
             
@@ -56,7 +56,7 @@ export const PairDetail = (props) => {
           {title: 'Token Address', content: <a href={`http://atomic-explorer.marslab.top/token/${params.tokenAddress}`}>{params.tokenAddress} {<LinkIcon />}</a>}, 
           {title: 'Creator', content: creatorContent},
           {title: 'Decimals', content: pair.decimals},
-          {title: 'Mint Date', content: mintDate.status ? mintDate.result : 'Unknown'},
+          // {title: 'Mint Date', content: mintDate.status ? mintDate.result : 'Unknown'},
           {title: 'Total Supply', content: totalSupply},
           {title: 'Description', content: pair.description},
         ]);
